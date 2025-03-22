@@ -1,0 +1,18 @@
+Company Name: Shoell
+Project Name: Autobody
+Solution Root Path: C:\git\Shoell\Autobody
+
+Tenant ID: 87b57f75-016d-4e16-bc51-f63021e6d7d9
+Primary Domain: shoell.com
+STS Instance: https://login.microsoftonline.com
+
+API URL: https://localhost:44313
+API App (Client) ID: 7ba0ef35-3759-4726-a194-28b2e2e2912a
+API Object ID: 10fe07aa-d091-486f-8679-faad45ae4690
+
+Website URL: https://localhost:44314
+Web App (Client) ID: 75b6c518-ca71-410a-8ed6-d8e8f320e035
+Component Prefix: sh
+
+Database - Default User Name: spencer@shoell.com
+Database - Default User External ID: d2ad2949-abb8-45b5-a072-1cf87d79d86a
