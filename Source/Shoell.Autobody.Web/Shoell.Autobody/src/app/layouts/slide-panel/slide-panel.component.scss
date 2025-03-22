@@ -1,0 +1,90 @@
+@use "variables.scss" as *;
+
+.panel-wrapper {
+    display: none;
+
+    .slide-wrapper {
+        animation-duration: .5s;
+        animation-name: slidein;
+    }
+
+    &.open {
+        display: block;
+
+        .slide-wrapper {
+            animation-duration: .5s;
+            animation-name: slideout;
+        }
+    }
+
+    .slide-wrapper {
+        position: absolute;
+        top: var(--navigation-height);
+        bottom: 0;
+        right: 0;
+        width: 940px;
+        max-width: calc(100vw - 60px);
+        z-index: 1500;
+        background-color: var(--main-bg);
+        @include depth-64();
+
+        @media(max-width: 575px) {
+            max-width: 100vw;
+        }
+
+        .slide-wrapper-header {
+            height: var(--navigation-height);
+            margin-left: var(--content-padding);
+        }
+
+        .slide-wrapper-content {
+            position: relative;
+            height: calc(100% - var(--navigation-height));
+            overflow: hidden;
+
+            ::ng-deep .slide-panel-host {
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                top: 0;
+                background-color: var(--main-bg);
+            }
+        }
+    }
+
+    .slide-overlay {
+        position: absolute;
+        top: var(--navigation-height);
+        left: 0;
+        height: calc(100vh - var(--navigation-height));
+        width: 100vw;
+        background-color: var(--overlay);
+        opacity: 0.6;
+        z-index: 1499;
+    }
+
+    @keyframes slideout {
+        from {
+            width: 150px;
+            max-width: 150px;
+        }
+
+        to {
+            width: 940px;
+            max-width: calc(100vw - 60px);
+        }
+    }
+
+    @keyframes slidein {
+        from {
+            width: 940px;
+            max-width: calc(100vw - 60px);
+        }
+
+        to {
+            width: 0px;
+            max-width: 0px;
+        }
+    }
+}

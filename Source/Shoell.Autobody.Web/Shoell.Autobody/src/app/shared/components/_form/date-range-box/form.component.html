@@ -1,0 +1,6 @@
+<dx-date-range-box [(value)]="value" [readOnly]="!isEditing" [startDateLabel]="startDateLabel"
+    [endDateLabel]="endDateLabel" [elementAttr]="{class: elementClass}" [stylingMode]="_stylingMode" [multiView]="true"
+    placeholder="" displayFormat="MM/dd/yyyy" pickerType="calendar" type="date" [openOnFieldClick]="true"
+    (onValueChanged)="onValueChanged($event)">
+    <dx-validator [validationRules]="validators" [validationGroup]="validationGroup"></dx-validator>
+</dx-date-range-box>

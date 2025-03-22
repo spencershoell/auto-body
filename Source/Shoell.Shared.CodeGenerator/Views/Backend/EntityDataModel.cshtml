@@ -1,0 +1,95 @@
+﻿@model List<EntityType>;
+@{
+	Layout = null;
+	var companyName = Model.FirstOrDefault()?.Config.CompanyName.AsPascaleCase() ?? string.Empty;
+	var projectName = Model.FirstOrDefault()?.Config.ProjectName.AsPascaleCase() ?? string.Empty;
+	var namespaces = Model.GroupBy(e => e.Namespace);   
+}
+using Microsoft.OData.Edm;
+using Microsoft.OData.ModelBuilder;
+@foreach (var ns in namespaces)
+{
+<text>using @(companyName).@(projectName).Models@(ns.Key == string.Empty ? "" : ".")@(ns.Key);
+</text>
+    foreach (var type in ns)
+    {
+        if (type.Keys.Count > 1)
+        {
+<text>using @(companyName).@(projectName).Services.@(type.Name)DtoModels;
+</text>
+        }
+    }
+}
+
+namespace @(companyName).@(projectName).Services
+{
+    public static class @(projectName)DataModel
+    {
+        private static readonly string _namespace = "@(companyName).@(projectName)";
+        private static readonly string _actionNamespace = $"{_namespace}.Actions";
+        private static readonly string _functionNamespace = $"{_namespace}.Functions";
+
+        public static IEdmModel GetEntityDataModel()
+        {
+            var builder = new ODataConventionModelBuilder()
+            {
+                Namespace = _namespace,
+                ContainerName = $"{_namespace}_Container"
+            };
+            builder
+                .EnableLowerCamelCase()
+                .ConfigureIdentityModels(_namespace);
+
+@foreach (var ns in namespaces)
+{
+<text>            #region @(ns.Key.AsPascaleCase())
+    @foreach (var type in ns)
+    {
+        var typeName = type.Name.AsPascaleCase();
+
+        var isJoinType = type.Keys.Count() > 1;
+
+        var key1 = type.Keys.FirstOrDefault()?.Name ?? string.Empty;
+        var key2 = type.Keys.LastOrDefault()?.Name ?? string.Empty;
+
+        var keyName1 = key1.Replace("Id", string.Empty);
+        var keyName2 = key2.Replace("Id", string.Empty);
+
+        var keyType1 = type.Keys.FirstOrDefault()?.Type ?? string.Empty;
+        var keyType2 = type.Keys.LastOrDefault()?.Type ?? string.Empty;
+<text>            // @(typeName)
+            var @(typeName.AsCamelCase()) = builder.EntitySet<@(typeName)>(@(typeName).EntityType.EntitySet)
+                .EntityType;
+        @if (!string.IsNullOrEmpty(type.BaseType))
+        {
+<text>            @(typeName.AsCamelCase()).ConfigureForBaseModel(_namespace);
+</text>
+        }
+        @if (isJoinType)
+        {
+<text>
+            @(typeName.AsCamelCase()).HasKey(e => new { e.@(key1.AsPascaleCase()), e.@(key2.AsPascaleCase()) });
+
+            @(typeName.AsCamelCase()).Property(e => e.@(key1.AsPascaleCase())).Order = 1;
+            @(typeName.AsCamelCase()).Property(e => e.@(key2.AsPascaleCase())).Order = 2;
+
+            var @(typeName.AsCamelCase())AddTo@(keyName2.AsPascaleCase().AsPlural()) = @(typeName.AsCamelCase()).Collection.Action("AddTo@(keyName2.AsPascaleCase().AsPlural())");
+            @(typeName.AsCamelCase())AddTo@(keyName2.AsPascaleCase().AsPlural()).Parameter<Add@(keyName1.AsPascaleCase())To@(keyName2.AsPascaleCase().AsPlural())Dto>("model");
+            @(typeName.AsCamelCase())AddTo@(keyName2.AsPascaleCase().AsPlural()).Namespace = _namespace;
+
+            var @(typeName.AsCamelCase())AddTo@(keyName1.AsPascaleCase().AsPlural()) = @(typeName.AsCamelCase()).Collection.Action("AddTo@(keyName1.AsPascaleCase().AsPlural())");
+            @(typeName.AsCamelCase())AddTo@(keyName1.AsPascaleCase().AsPlural()).Parameter<Add@(keyName2.AsPascaleCase())To@(keyName1.AsPascaleCase().AsPlural())Dto>("model");
+            @(typeName.AsCamelCase())AddTo@(keyName1.AsPascaleCase().AsPlural()).Namespace = _namespace;
+</text>
+        }
+
+</text>
+}
+            #endregion     
+
+</text>
+}
+            return builder.GetEdmModel();
+        }
+    }
+}

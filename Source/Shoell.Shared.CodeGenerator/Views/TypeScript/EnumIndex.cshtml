@@ -1,0 +1,16 @@
+﻿@model List<EntityEnum>;
+@{
+    Layout = null;
+    var namespaces = Model.GroupBy(e => e.Namespace);
+}
+@foreach(var ns in namespaces)
+{
+<text>
+// @(ns.Key)
+</text>
+    @foreach(var type in ns)
+    {
+<text>export * from './@((string.IsNullOrEmpty(ns.Key) ? "" : $"{ns.Key}/"))@(type.Name.AsDashedLowerCase()).type';
+</text>
+    }
+}

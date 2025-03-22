@@ -1,0 +1,74 @@
+@use "variables.scss" as *;
+
+// Breadcrumbs
+.breadcrumbs {
+    position: relative;
+    background-color: var(--main-bg);
+    padding: var(--breadcrumb-padding);
+
+    .breadcrumb-item {
+        display: inline-block;
+        margin-right: var(--content-padding);
+        color: var(--accent-color);
+
+        &.active {
+            font-weight: bold;
+
+            a {
+                text-decoration: underline;
+            }
+        }
+
+        &::after {
+            content: '/';
+            margin-left: var(--content-padding);
+            color: var(--base-text-color);
+        }
+
+        &:last-child::after {
+            display: none;
+        }
+
+        a {
+            text-decoration: none;
+        }
+    }
+}
+
+// Default Icon colors
+.dx-button.dx-button-mode-text.dx-button-normal {
+    i.dx-icon {
+        color: var(--base-accent);
+    }
+}
+
+// Depth Shadows
+// -- Cards/Grid item thumbnails
+.depth-4 {
+    @include depth-4();
+}
+
+// -- Command bars/Command dropdowns/Context menus
+.depth-8 {
+    @include depth-8();
+}
+
+// -- Teaching callouts/Search results dropdowns/Hover cards/Tooltips
+.depth-16 {
+    @include depth-16();
+}
+
+// -- Panels/Popup dialogs
+.depth-64 {
+    @include depth-64();
+}
+
+.card {
+    display: block;
+    position: relative;
+    background-color: var(--base-bg);
+    padding: var(--content-padding);
+    border: var(--border-size) solid var(--base-border-color);
+    border-radius: var(--border-radius);
+    @include depth-4();
+}

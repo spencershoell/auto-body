@@ -1,0 +1,37 @@
+﻿@model EntityType;
+@{
+    Layout = null;
+}
+import { NgIf } from "@@angular/common";
+import { Component, OnInit } from "@@angular/core";
+import { ActivatedRoute, RouterModule } from "@@angular/router";
+import { DxLoadIndicatorModule } from "devextreme-angular";
+import Guid from "devextreme/core/guid";
+import { Context, @(Model.Name.AsPascaleCase()) } from "src/app/data";
+import { @(Model.Name.AsPascaleCase())DetailComponent } from "src/app/shared/components/@(string.IsNullOrEmpty(Model.Namespace) ? "" : $"{Model.Namespace}/")@(Model.Name.AsDashedLowerCase())/detail.component";
+
+@@Component({
+    selector: '@(Model.Config.AppPrefix)-@(Model.Name.AsDashedLowerCase())-detail-page',
+    templateUrl: './detail.page.html',
+    styleUrls: ['./detail.page.scss'],
+    standalone: true,
+    imports: [NgIf, RouterModule, DxLoadIndicatorModule, @(Model.Name.AsPascaleCase())DetailComponent]
+})
+export class @(Model.Name.AsPascaleCase())DetailPageComponent implements OnInit {
+    id!: Guid;
+    model?: @(Model.Name.AsPascaleCase())
+
+    constructor(
+        private route: ActivatedRoute,
+        private context: Context
+    ) { }
+
+    async ngOnInit(): Promise<void> {
+        this.id = this.route.snapshot.paramMap.get("id") as Guid;
+        await this.refresh();
+    }
+
+    async refresh(): Promise<void> {
+        this.model = (await this.context.@(Model.Name.AsCamelCase().AsPlural()).load({ filter: ['id', this.id] }))[0];
+    }
+} 

@@ -1,0 +1,47 @@
+<dx-data-grid height="100%" [allowColumnReordering]="true" [allowColumnResizing]="true"
+  [columnAutoWidth]="true" [columnMinWidth]="150" [columnHidingEnabled]="true" [dataSource]="dataSource"
+  [remoteOperations]="true" [rowAlternationEnabled]="true" [showBorders]="true" [showColumnLines]="false"
+  [showRowLines]="true" [wordWrapEnabled]="true" [showColumnHeaders]="true">
+  <dxo-column-chooser [enabled]="true" mode="select"></dxo-column-chooser>
+  <dxo-editing mode="batch" refreshMode="full" [allowDeleting]="canModify">
+  </dxo-editing>
+  <dxo-filter-panel [visible]="false"></dxo-filter-panel>
+  <dxo-filter-row [visible]="false"></dxo-filter-row>
+  <dxo-group-panel [visible]="false"></dxo-group-panel>
+  <dxo-grouping #expand [autoExpandAll]="true" [contextMenuEnabled]="false"></dxo-grouping>
+  <dxo-header-filter [visible]="false"></dxo-header-filter>
+  <dxo-keyboard-navigation enterKeyAction="startEdit" enterKeyDirection="row" [editOnKeyPress]="true">
+  </dxo-keyboard-navigation>
+  <dxo-paging [enabled]="true" [pageSize]="100"></dxo-paging>
+  <dxo-scrolling mode="virtual" rowRenderingMode="virtual" [preloadEnabled]="true"></dxo-scrolling>
+  <dxo-search-panel [visible]="true" [searchVisibleColumnsOnly]="true"></dxo-search-panel>
+  <dxo-toolbar>
+    <dxi-item location="before" name="groupPanel" locateInMenu="auto"></dxi-item>
+    <dxi-item *ngIf="canModify" location="before" locateInMenu="auto" [visible]="canModify">
+      <div *dxTemplate>
+        <dx-button stylingMode="contained" type="success" [icon]="fasLink" text="Link" (onClick)="link()">
+        </dx-button>
+      </div>
+    </dxi-item>
+    <dxi-item *ngIf="canCreateGroup" location="before" locateInMenu="auto" [visible]="canModify">
+      <div *dxTemplate>
+        <dx-button stylingMode="contained" type="default" [icon]="fasPlus" text="Add Group" (onClick)="createGroup()">
+        </dx-button>
+      </div>
+    </dxi-item>
+    <dxi-item location="after" locateInMenu="auto" showText="inMenu" widget="dxButton"
+      [options]="{ text: 'Refresh', icon: 'refresh', onClick: refresh }"></dxi-item>
+    <dxi-item [visible]="canModify" name="saveButton"></dxi-item>
+    <dxi-item [visible]="canModify" name="revertButton"></dxi-item>
+    <dxi-item name="columnChooserButton" locateInMenu="auto"></dxi-item>
+    <dxi-item name="searchPanel" locateInMenu="auto"></dxi-item>
+  </dxo-toolbar>
+  <dxi-column dataField="role.target" caption="Target" [hidingPriority]="89" [visible]="showRole" [allowEditing]="false"
+    [groupIndex]="0"></dxi-column>
+  <dxi-column dataField="role.operation" caption="Name" [hidingPriority]="89" [visible]="showRole"
+    [allowEditing]="false"></dxi-column>
+  <dxi-column dataField="group.name" [hidingPriority]="91" caption="Name" [visible]="showGroup"
+    [allowEditing]="false"></dxi-column>
+  <dxi-column dataField="group.description" [hidingPriority]="86" caption="Description" [allowEditing]="false"
+    [visible]="showGroup"></dxi-column>
+</dx-data-grid>

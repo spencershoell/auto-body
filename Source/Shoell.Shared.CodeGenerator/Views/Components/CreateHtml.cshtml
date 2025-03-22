@@ -1,0 +1,113 @@
+﻿@model EntityType;
+@{
+    Layout = null;
+}
+<ng-container *ngIf="model">
+    <div class="create-header">
+        <dx-toolbar>
+            <dxi-item location="before">
+                Create new {{entityType}}
+            </dxi-item>
+            <!-- Create Buttons -->
+            <!-- -- Save -->
+            <dxi-item location="after" [visible]="!isSaving && canCreate">
+                <div *dxTemplate>
+                    <dx-button text="Save" [icon]="fasFloppyDisk" stylingMode="contained" type="default"
+                        (onClick)="save()"></dx-button>
+                </div>
+            </dxi-item>
+            <!-- -- Saving -->
+            <dxi-item location="after" [visible]="isSaving && canCreate">
+                <div *dxTemplate>
+                    <dx-load-indicator></dx-load-indicator>
+                </div>
+            </dxi-item>
+        </dx-toolbar>
+    </div>
+    <div class="create-body">
+        <div class="card">
+            <dx-scroll-view>
+                <dx-form [colCount]="1">
+                    <div *dxTemplate>
+                        <dx-validation-summary [validationGroup]="validationGroup"></dx-validation-summary>
+                     </div>
+        @if (Model.BaseType == "BaseModel") {
+                    <dxi-item>
+                        <div *dxTemplate>
+                            <form-text-box label="Name" [(value)]="model.name!"
+                                [validators]="[{ type: 'required', message: 'Name is a required field' }]" [validationGroup]="validationGroup"></form-text-box>
+                        </div>
+                    </dxi-item>
+                    <dxi-item>
+                        <div *dxTemplate>
+                            <form-text-area label="Description" [(value)]="model.description!"
+                                [validationGroup]="validationGroup"></form-text-area>
+                        </div>
+                    </dxi-item>
+        }
+        @foreach (var property in Model.Properties.OrderBy(e => e.Name))
+        {
+            switch (property.Type.GetJavascriptType())
+            {
+                case "string":
+                    <dxi-item>
+                        <div *dxTemplate>
+                            <form-text-box label="@(property.DisplayName)" [(value)]="model.@(property.Name.AsCamelCase())!"
+                                @{
+                                    if (property.Required) { <text>[validators]="[{ type: 'required', message: '@(property.DisplayName) is a required field' }]" </text> } 
+                                }[validationGroup]="validationGroup"@if(property.Required){<text> [validators]="[{type: 'required', message: '@(property.DisplayName) is required'}]"</text>}></form-text-box>
+                        </div>
+                    </dxi-item>
+                    break;
+                case "number":
+                    <dxi-item>
+                        <div *dxTemplate>
+                            <form-number-box label="@(property.DisplayName)" [(value)]="model.@(property.Name.AsCamelCase())!"
+                                @{
+                                    if (property.Required) { <text>[validators]="[{ type: 'required', message: '@(property.DisplayName) is a required field' }]" </text> } 
+                                }[validationGroup]="validationGroup"@if(property.Required){<text> [validators]="[{type: 'required', message: '@(property.DisplayName) is required'}]"</text>}></form-number-box>
+                        </div>
+                    </dxi-item>
+                    break;
+                case "Date | string | number":
+                    <dxi-item>
+                        <div *dxTemplate>
+                            <form-date-box label="@(property.DisplayName)" [(value)]="model.@(property.Name.AsCamelCase())!" 
+                                @{
+                                    if (property.Required) { <text>[validators]="[{ type: 'required', message: '@(property.DisplayName) is a required field' }]" </text> } 
+                                }[validationGroup]="validationGroup"@if(property.Required){<text> [validators]="[{type: 'required', message: '@(property.DisplayName) is required'}]"</text>}></form-date-box>
+                        </div>
+                    </dxi-item>
+                    break;
+                case "boolean | null":
+                    <dxi-item>
+                        <div *dxTemplate>
+                            <form-check-box label="@(property.DisplayName)" [labelToRight]="true" [(value)]="model.@(property.Name.AsCamelCase())!" 
+                                @{
+                                    if (property.Required) { <text>[validators]="[{ type: 'required', message: '@(property.DisplayName) is a required field' }]" </text> } 
+                                }[validationGroup]="validationGroup"@if(property.Required){<text> [validators]="[{type: 'required', message: '@(property.DisplayName) is required'}]"</text>}></form-check-box>
+                        </div>
+                    </dxi-item>
+                    break;
+                default:
+                    break;
+            }
+        }       @foreach (var navProperty in Model.NavigationProperties.Where(e => !e.IsCollection && e.ForeignKey.AsCamelCase() != "id"))
+                {
+                    <text>
+                    <dxi-item [visible]="show@(navProperty.Name.AsPascaleCase())">
+                        <div *dxTemplate>
+                            <@(Model.Config.AppPrefix)-@(navProperty.Type.AsDashedLowerCase())-select [(value)]="model.@(navProperty.ForeignKey.AsCamelCase())" 
+                                label="@(navProperty.Name.AsSpacedPascaleCase())" [validationGroup]="validationGroup"@if(navProperty.Required){<text> [validators]="[{type: 'required', message: '@(navProperty.DisplayName) is required'}]"</text>}>@Html.Raw($"</{Model.Config.AppPrefix}-{navProperty.Type.AsDashedLowerCase()}-select>")
+                        </div>
+                    </dxi-item></text>
+        }
+
+                </dx-form>
+            </dx-scroll-view>
+        </div>
+    </div>
+</ng-container>
+<div *ngIf="!model" class="create-load-indicator-wrapper">
+    <dx-load-indicator class="create-load-indicator" [height]="50" [width]="50"></dx-load-indicator>
+</div>

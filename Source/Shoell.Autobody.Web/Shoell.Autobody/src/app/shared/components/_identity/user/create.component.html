@@ -1,0 +1,63 @@
+<ng-container *ngIf="model">
+    <div class="create-header">
+        <dx-toolbar>
+            <dxi-item location="before">
+                Create new {{entityType}}
+            </dxi-item>
+            <!-- Create Buttons -->
+            <!-- -- Save -->
+            <dxi-item location="after" [visible]="!isSaving && canCreate">
+                <div *dxTemplate>
+                    <dx-button text="Save" [icon]="fasFloppyDisk" stylingMode="contained" type="default"
+                        (onClick)="save()"></dx-button>
+                </div>
+            </dxi-item>
+            <!-- -- Saving -->
+            <dxi-item location="after" [visible]="isSaving && canCreate">
+                <div *dxTemplate>
+                    <dx-load-indicator></dx-load-indicator>
+                </div>
+            </dxi-item>
+        </dx-toolbar>
+    </div>
+    <div class="create-body">
+        <div class="card">
+            <dx-scroll-view>
+                <dx-form [colCount]="1">
+                    <dxi-item>
+                        <div *dxTemplate>
+                            <dx-validation-summary [validationGroup]="validationGroup"></dx-validation-summary>
+                        </div>
+                    </dxi-item>
+                    <dxi-item>
+                        <div *dxTemplate>
+                            <form-text-box label="User Name" [(value)]="model.userName!"
+                                [validators]="[{ type: 'required', message: 'User Name is a required field' }]"
+                                [validationGroup]="validationGroup"></form-text-box>
+                        </div>
+                    </dxi-item>
+                    <dxi-item>
+                        <div *dxTemplate>
+                            <form-text-box label="Email" [(value)]="model.email!"
+                                [validators]="[{ type: 'required', message: 'Email is a required field' }, { type: 'email', message: 'Email is not valid' }]"
+                                [validationGroup]="validationGroup"></form-text-box>
+                        </div>
+                    </dxi-item>
+                    <dxi-item>
+                        <div *dxTemplate>
+                            <form-text-box label="External Id" [(value)]="model.externalId!"></form-text-box>
+                        </div>
+                    </dxi-item>
+                    <dxi-item>
+                        <div *dxTemplate>
+                            <sh-user-select label="User"></sh-user-select>
+                        </div>
+                    </dxi-item>
+                </dx-form>
+            </dx-scroll-view>
+        </div>
+    </div>
+</ng-container>
+<div *ngIf="!model" class="create-load-indicator-wrapper">
+    <dx-load-indicator class="create-load-indicator" [height]="50" [width]="50"></dx-load-indicator>
+</div>

@@ -1,0 +1,87 @@
+﻿@model List<EntityType>;
+@{
+    Layout = null;
+    var companyName = Model.FirstOrDefault()?.Config.CompanyName.AsPascaleCase() ?? string.Empty;
+    var projectName = Model.FirstOrDefault()?.Config.ProjectName.AsPascaleCase() ?? string.Empty;
+    var namespaces = Model.GroupBy(e => e.Namespace);
+}
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using @(companyName).Shared.Interfaces.Identity;
+using @(companyName).Shared.Interfaces.System;
+using @(companyName).@(projectName).Models.System;
+@foreach(var model in Model.Where(e => e.Name.ToLower() == "task"))
+{
+	var ns = (model.Namespace == string.Empty) ? string.Empty : $".{model.Namespace}";
+<text>using @(model.Name) = @(companyName).@(projectName).Models@(ns).@(model.Name);
+</text>
+}
+@foreach (var ns in namespaces.Where(e => e.Key != "Identity"))
+{
+<text>using @(companyName).Shared.Interfaces@(ns.Key == string.Empty ? "" : ".")@(ns.Key);
+</text>
+}
+@foreach (var ns in namespaces.Where(e => e.Key != "Identity"))
+{
+<text>using @(companyName).@(projectName).Data@(ns.Key == string.Empty ? "" : ".")@(ns.Key);
+</text>
+}
+using @(companyName).@(projectName).Models.Identity;
+@foreach (var ns in namespaces.Where(e => e.Key != "Identity"))
+{
+<text>using @(companyName).@(projectName).Models@(ns.Key == string.Empty ? "" : ".")@(ns.Key);
+</text>
+}
+
+namespace @(companyName).@(projectName).Data;
+public static class RepositoryConfiguration
+{
+    public static IServiceCollection Add@(projectName)Repositories(this IServiceCollection services)
+    {
+        services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+		services.AddSingleton<IDateTimeProvider, @(projectName)DateTimeProvider>();
+
+        // Context Interfaces
+        services
+@foreach(var ns in namespaces)
+{
+<text>      // @(ns.Key)
+@foreach(var type in ns)
+{
+<text>		    @Html.Raw($".AddScoped<I{type.Name.AsPascaleCase()}")Context<@(type.Name.AsPascaleCase()), Log>, @(projectName)Context>()
+</text>
+}
+</text>
+}
+            // Identity
+        .AddScoped<IUserContext<User, Log>, @(projectName)Context>()
+            .AddScoped<IRoleContext<Role, Log>, @(projectName)Context>()
+            .AddScoped<IGroupContext<Group, Log>, @(projectName)Context>()
+            .AddScoped<IUser_GroupContext<User_Group, Log>, @(projectName)Context>()
+            .AddScoped<IRole_GroupContext<Role_Group, Log>, @(projectName)Context>()
+                
+            .AddScoped<ILogContext<Log>, @(projectName)Context>();
+
+        // Repositories
+        services
+@foreach (var ns in namespaces) 
+{
+<text>          // @(ns.Key) 
+    @foreach(var entityType in ns)
+    {
+<text>          .AddScoped<@(entityType.Name.AsPascaleCase())Repository>()
+</text>
+    }
+</text>
+}
+
+            // Identity
+            .AddScoped<UserRepository>()
+            .AddScoped<RoleRepository>()
+            .AddScoped<GroupRepository>()
+            .AddScoped<User_GroupRepository>()
+            .AddScoped<Role_GroupRepository>();
+    
+    return services;
+    }
+}

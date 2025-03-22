@@ -1,0 +1,49 @@
+﻿@model List<EntityType>;
+@{
+    Layout = null;
+    var namespaces = Model.GroupBy(e => e.Namespace);
+}
+import ODataContext from "devextreme/data/odata/context";
+import { environment } from "src/environments/environment";
+import { Injectable } from "@@angular/core";
+import { GroupStore, Role_GroupStore, RoleStore, User_GroupStore, UserStore @foreach(var type in Model.OrderBy(e => e.Name))
+{
+<text>, @(type.Name.AsPascaleCase())Store</text>
+} } from "./stores";
+
+@@Injectable({
+    providedIn: 'root'
+})
+export class Context {
+    protected baseUrl: string = environment.settings.resources.api.endpoint;
+
+    odataContext: ODataContext;
+
+    constructor(
+        public groups: GroupStore,
+        public roles: RoleStore,
+        public users: UserStore,
+
+        public role_Groups: Role_GroupStore,
+        public user_Groups: User_GroupStore,
+@foreach (var ns in namespaces)
+{
+<text>
+        // @(ns.Key)
+</text>
+    @foreach(var type in ns.OrderBy(e => e.Name))
+    {
+<text>        public @(type.Name.AsCamelCase().AsPlural()): @(type.Name.AsPascaleCase())Store,
+</text>
+    }
+}
+    ) {
+        this.odataContext = new ODataContext({
+            url: this.baseUrl,
+            errorHandler: (error) => {
+                console.error(error);
+            },
+            version: 4
+        })
+    }
+}

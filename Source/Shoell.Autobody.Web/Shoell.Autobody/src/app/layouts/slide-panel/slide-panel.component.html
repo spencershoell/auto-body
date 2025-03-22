@@ -1,0 +1,26 @@
+<div class="panel-wrapper" [ngClass]="{open : isOpen}">
+    <div *ngIf="showOverlay" class="slide-overlay"></div>
+    <div class="slide-wrapper">
+        <div class="slide-wrapper-header">
+            <dx-toolbar>
+                <dxi-item [visible]="showBackButton" location="before">
+                    <dx-button stylingMode="text" [icon]="farArrowLeft" (click)="back()"></dx-button>
+                </dxi-item>
+                <dxi-item location="before">
+                    <div class="breadcrumbs">
+                        <div class="breadcrumb-item" *ngFor="let title of titles">
+                            {{title}}
+                        </div>
+                    </div>
+                </dxi-item>
+                <dxi-item location="after">
+                    <dx-button stylingMode="text" [icon]="farArrowRotateRight" (click)="reload()"></dx-button>
+                    <dx-button stylingMode="text" [icon]="farTimes" (click)="close()"></dx-button>
+                </dxi-item>
+            </dx-toolbar>
+        </div>
+        <div class="slide-wrapper-content">
+            <ng-template slideHost></ng-template>
+        </div>
+    </div>
+</div>

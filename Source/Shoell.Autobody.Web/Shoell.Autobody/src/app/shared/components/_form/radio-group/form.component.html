@@ -1,0 +1,5 @@
+<label class="form-label">{{label}}</label>
+<dx-radio-group [(value)]="value" [readOnly]="!isEditing" [items]="items" [displayExpr]="displayExpr"
+    [valueExpr]="valueExpr" [elementAttr]="{class: elementClass}" (onValueChanged)="onValueChanged($event)">
+    <dx-validator [validationRules]="validators" [validationGroup]="validationGroup"></dx-validator>
+</dx-radio-group>

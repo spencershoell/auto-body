@@ -1,0 +1,13 @@
+﻿@model EntityEnum;
+@{
+	Layout = null;
+	var companyName = Model.Config.CompanyName.AsPascaleCase();
+	var projectName = Model.Config.ProjectName.AsPascaleCase();
+	var ns = (Model.Namespace == string.Empty) ? string.Empty : $".{Model.Namespace}";
+	var name = Model.Name.AsPascaleCase();
+}
+export type @(name) = @for(var i = 0; i < Model.Properties.Count; i++)
+{
+	var property = Model.Properties[i];
+<text>'@(property.Name)'@((i < Model.Properties.Count - 1) ? " | " : "")</text>
+};

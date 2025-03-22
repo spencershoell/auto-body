@@ -1,0 +1,16 @@
+﻿@model EntityType;
+@{
+    Layout = null;
+}
+import { Component } from "@@angular/core";
+import { RouterModule } from "@@angular/router";
+import { @(Model.Name.AsPascaleCase())ListComponent } from "src/app/shared/components/@(string.IsNullOrEmpty(Model.Namespace) ? "" : $"{Model.Namespace}/")@(Model.Name.AsDashedLowerCase())/list.component";
+
+@@Component({
+    selector: '@(Model.Config.AppPrefix)-@(Model.Name.AsDashedLowerCase())-list-page',
+    templateUrl: './list.page.html',
+    styleUrls: ['./list.page.scss'],
+    standalone: true,
+    imports: [RouterModule, @(Model.Name.AsPascaleCase())ListComponent]
+})
+export class @(Model.Name.AsPascaleCase())ListPageComponent { }

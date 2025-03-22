@@ -1,0 +1,104 @@
+﻿@model EntityType;
+@{
+	Layout = null;
+	var companyName = Model.Config.CompanyName.AsPascaleCase();
+	var projectName = Model.Config.ProjectName.AsPascaleCase();
+	var ns = (Model.Namespace == string.Empty) ? string.Empty : $".{Model.Namespace}";
+	var name = Model.Name.AsPascaleCase();
+	var baseType = (Model.BaseType != string.Empty) ? $" : I{Model.BaseType}" : string.Empty;
+	var displayNew = (Model.BaseType != string.Empty) ? " new" : string.Empty;
+	var isUser = Model.Name.ToLower() == "user" && Model.Namespace.ToLower() == "identity";
+	if (isUser)
+		baseType = " : IBaseModel";
+}
+@{if(isUser)
+{
+<text>using @(companyName).Shared.Interfaces.System;
+</text>
+}
+if(Model.Properties.Any(e => e.IsEnum))
+{
+<text>using @(companyName).Shared.Types;
+</text>
+}}
+@foreach(var _ns in Model.NavigationProperties
+	.Where(e => !string.IsNullOrEmpty(e.TypeNamespace) && e.TypeNamespace != Model.Namespace)
+	.OrderBy(e => e.TypeNamespace)
+	.Select(e => e.TypeNamespace)
+	.Distinct())
+{
+<text>using @(companyName).Shared.Interfaces.@(_ns);
+</text>
+}
+@if(Model.NavigationProperties
+	.Where(e => !string.IsNullOrEmpty(e.TypeNamespace) && e.TypeNamespace != Model.Namespace)
+	.Any())
+{
+<text>
+</text>
+}
+namespace @(companyName).Shared.Interfaces@(ns)
+{
+	public interface I@(name)@baseType
+	{
+@if(Model.Properties.Count > 0)
+{			
+	@foreach(var property in Model.Properties)
+	{
+		var propertyType = property.Type.GetCSharpType();
+		var propertyName = property.Name.AsPascaleCase();
+		var nullable = (property.Nullable) ? "?" : string.Empty;
+		var defaultValue = (property.DefaultValue != null) 
+			? $" = {property.DefaultValue};" 
+			: (!property.Nullable && property.Type.GetCSharpType() == "string") 
+				? " = string.Empty;" 
+				: string.Empty;
+<text>		@(propertyType)@(nullable) @(propertyName) { get; set; }
+</text>
+	}
+}
+@if(string.IsNullOrEmpty(Model.BaseType) && !isUser)
+{
+<text>		long RowId { get; set; }
+</text>
+}
+@if(Model.NavigationProperties.Where(e => !e.IsCollection).Count() > 0)
+{
+<text>
+</text>
+	@foreach(var navProperty in Model.NavigationProperties
+		.Where(e => !e.IsCollection && e.ForeignKey.AsPascaleCase() != "Id"))
+	{
+<text>		Guid@((navProperty.Nullable) ? "?" : string.Empty) @(navProperty.ForeignKey.AsPascaleCase()) { get; set; }
+</text>
+	}
+}
+@if(Model.NavigationProperties.Where(e => !e.IsCollection).Count() > 0){
+<text>
+</text>
+	@foreach(var navProperty in Model.NavigationProperties.Where(e => !e.IsCollection)){
+<text>		I@(navProperty.Type.GetCSharpType())@((navProperty.Nullable) ? "?" : string.Empty) @(navProperty.Name.AsPascaleCase()) { get; set; }
+</text>
+	}
+}
+@if(Model.NavigationProperties.Where(e => e.IsCollection).Count() > 0)
+{
+<text>
+</text>
+	@foreach(var navProperty in Model.NavigationProperties.Where(e => e.IsCollection))
+	{
+<text>		ICollection<I@(navProperty.Type.GetCSharpType())>@((navProperty.Nullable) ? "?" : string.Empty) @(navProperty.Name.AsPascaleCase()) { get; set; }
+</text>
+	}
+}
+@if(isUser){
+<text>
+		string ExternalId { get; set; }
+
+        ICollection<IUser_Group> UserGroups { get; set; }
+        ICollection<ILog> Logs { get; set; }
+        ICollection<IUser_Role> UserRoles { get; set; }
+</text>
+}
+	}
+}

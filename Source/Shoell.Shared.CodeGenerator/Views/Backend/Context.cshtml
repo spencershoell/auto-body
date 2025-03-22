@@ -1,0 +1,178 @@
+﻿@model List<EntityType>;
+@{
+	Layout = null;
+	var companyName = Model.FirstOrDefault()?.Config.CompanyName.AsPascaleCase() ?? string.Empty;
+	var projectName = Model.FirstOrDefault()?.Config.ProjectName.AsPascaleCase() ?? string.Empty;
+	var namespacesFiltered = Model
+		.Where(e => e.Namespace.AsPascaleCase() != "System" && e.Namespace.AsPascaleCase() != "Identity")
+		.GroupBy(e => e.Namespace);
+	var namespaces = Model
+		.GroupBy(e => e.Namespace);
+}
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using @(companyName).Shared.Interfaces.Identity;
+using @(companyName).Shared.Interfaces.System;
+@foreach(var model in Model.Where(e => e.Name.ToLower() == "task"))
+{
+	var ns = (model.Namespace == string.Empty) ? string.Empty : $".{model.Namespace}";
+<text>using @(model.Name) = @(companyName).@(projectName).Models@(ns).@(model.Name);
+</text>
+}
+@foreach (var ns in namespacesFiltered)
+{
+<text>using @(companyName).@(projectName).Models@(ns.Key == string.Empty ? "" : ".")@(ns.Key);
+</text>
+}
+@foreach (var ns in namespacesFiltered)
+{
+<text>using @(companyName).Shared.Interfaces@(ns.Key == string.Empty ? "" : ".")@(ns.Key);
+</text>
+}
+using @(companyName).@(projectName).Models.Identity;
+using @(companyName).@(projectName).Models.System;
+@foreach (var ns in namespacesFiltered)
+{
+	if (ns.Any(e => e.Name.AsPascaleCase() == "Type"))
+	{
+<text>using Type = @(companyName).@(projectName).Models@(ns.Key == string.Empty ? "" : ".")@(ns.Key).Type;</text>
+	}
+}
+
+namespace @(companyName).@(projectName).Data
+{
+	public class @(projectName)Context 
+		: IdentityDbContext<User, Role, Guid, IdentityUserClaim<Guid>, User_Role, IdentityUserLogin<Guid>, IdentityRoleClaim<Guid>, IdentityUserToken<Guid>>, 
+					@foreach (var ns in namespaces)
+{
+<text>		// @(ns.Key)
+	@foreach(var type in ns.Where(e => e.Name.ToLower() != "user"))
+	{
+<text>		I@(type.Name.AsPascaleCase())Context<@(type.Name.AsPascaleCase()), Log>,
+</text>
+	}
+</text>
+}
+		
+		// Identity Contexts
+        IGroupContext<Group, Log>,
+        IRoleContext<Role, Log>,
+        IUserContext<User, Log>,
+        IUser_RoleContext<User_Role, Log>,
+        IUser_GroupContext<User_Group, Log>,
+        IRole_GroupContext<Role_Group, Log>,
+        // System Contexts
+		ILogContext<Log>
+	{
+		private static readonly string _system = "System";
+		private static readonly string _identity = "Identity";
+@foreach(var ns in namespacesFiltered)
+{
+<text>		private static readonly string _@(ns.Key.AsCamelCase()) = "@(string.IsNullOrEmpty(ns.Key) ? "dbo" : ns.Key.AsPascaleCase())";
+</text>
+}
+@foreach(var ns in namespaces)
+{
+<text>
+		// @(ns.Key)
+@foreach(var type in ns)
+{
+<text>		public DbSet<@type.Name.AsPascaleCase()> @type.Name.AsPascaleCase().AsPlural() { get; set; } = null!;
+</text>
+}
+</text>
+}
+
+		// Identity
+		public DbSet<Group> Groups { get; set; } = null!;
+		public DbSet<Role_Group> RoleGroups { get; set; } = null!;
+		public DbSet<User_Group> UserGroups { get; set; } = null!;
+
+		// System
+		public DbSet<Log> Logs { get; set; } = null!;
+
+		public @(projectName)Context()
+				: base(new DbContextOptions<@(projectName)Context>()) { }
+
+		public @(projectName)Context(DbContextOptions<@(projectName)Context> options)
+			: base(options) { }
+
+		public async @{ if(Model.Any(e => e.Name.ToLower() == "task")) { <text>System.Threading.Tasks.</text> } }Task ApplyPermissionsAsync(CancellationToken cancellationToken = default)
+		{
+			await Database.ExecuteSqlAsync($"EXEC [Identity].[sp_ApplyPermissions]", cancellationToken);
+		}
+
+		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+		{
+			//optionsBuilder.EnableSensitiveDataLogging();
+			//optionsBuilder.EnableDetailedErrors();
+		}
+
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
+		{
+			base.OnModelCreating(modelBuilder);
+			modelBuilder.AddIdentityModels();
+
+			modelBuilder.Entity<Log>(entity =>
+			{
+				entity.ToTable(Log.EntityType.EntitySet, _system);
+				entity.Property(e => e.Name)
+					.HasComputedColumnSql("([Type] + ' ' + [Action])", stored: true);
+				entity.HasOne(e => e.User)
+					.WithMany(e => e.Logs)
+					.HasForeignKey(e => e.UserId)
+					.HasPrincipalKey(e => e.Id)
+					.OnDelete(DeleteBehavior.NoAction);
+				entity.HasQueryFilter(e => e.User.DateDeleted == null);
+			});
+
+	@foreach(var type in Model) 
+	{
+		var typeName = type.Name.AsPascaleCase();
+		var typeBase = type.BaseType.AsPascaleCase();
+<text>
+			modelBuilder.Entity<@(typeName)>(entity =>
+			{
+				entity.ToTable(@(typeName).EntityType.EntitySet, _@(type.Namespace.AsCamelCase()));	
+		@if(type.Keys.Count == 1){
+<text>				entity.HasKey(e => e.@(type.Keys.First().Name))
+						.IsClustered(false);
+					entity.Property(e => e.RowId)
+						.UseIdentityColumn();
+					entity.HasIndex(e => e.RowId)
+						.IsUnique()
+						.IsClustered(true);
+</text>
+		}
+		@if(type.Keys.Count > 1){
+<text>				entity.HasKey(e => new { @foreach(var key in type.Keys) { <text>e.@(key.Name), </text> } })
+						.IsClustered(false);
+					entity.Property(e => e.RowId)
+						.UseIdentityColumn();
+					entity.HasIndex(e => e.RowId)
+						.IsUnique()
+						.IsClustered(true);
+</text>
+		}
+		@if(!string.IsNullOrEmpty(type.BaseType))
+		{
+<text>				entity.Configure@(typeBase)();
+</text>
+		}
+		@foreach(var navProperty in type.NavigationProperties.Where(e => !e.IsCollection))
+		{
+<text>			
+				entity.HasOne(e => e.@(navProperty.Name))
+					.@(navProperty.IsOneToOne ? "WithOne" : "WithMany")(@if(!string.IsNullOrEmpty(navProperty.Partner)){<text>e => e.@(navProperty.Partner)</text>})
+					.HasForeignKey@{if(navProperty.IsOneToOne){ <text><@(type.Name)></text> }}(e => e.@(navProperty.ForeignKey))
+					.HasPrincipalKey@{if(navProperty.IsOneToOne){ <text><@(navProperty.Type)></text> }}(e => e.@(navProperty.PrincipalKey))
+					.OnDelete(DeleteBehavior.Restrict);
+</text>
+		}
+			});
+</text>	
+	}
+		}
+	}
+}

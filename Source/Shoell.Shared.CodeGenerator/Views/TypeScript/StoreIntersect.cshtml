@@ -1,0 +1,139 @@
+﻿@model EntityType;
+@{
+    Layout = null;
+    var model1 = Model.Name.Split('_').First();
+    var model2 = Model.Name.Split('_').Last();
+}
+
+import { Injectable } from "@@angular/core";
+import { MsalService } from "@@azure/msal-angular";
+import { plainToInstance } from "class-transformer";
+import ODataContext from "devextreme/data/odata/context";
+import ODataStore from "devextreme/data/odata/store";
+import { Common, DataFieldTypes, EntityEndpoint, EntityType } from "src/app/classes";
+import { @(Model.Name.AsPascaleCase()), @(Model.Name.AsPascaleCase())ODataStoreModel } from 'src/app/data/models';
+import { BaseJoinRemoteRepositoryService } from "..";
+import { DataEventService } from "src/app/shared/services";
+import { CrudScopeType, protectedResources } from "src/app/auth-config";
+import Guid from "devextreme/core/guid";
+import { catchError, lastValueFrom, of } from "rxjs";
+import { HttpClient, HttpErrorResponse } from "@@angular/common/http";
+import notify from "devextreme/ui/notify";
+import { environment } from "src/environments/environment";
+
+const url: string = `${environment.settings.resources.api.endpoint}${EntityEndpoint.@(Model.Name.AsPascaleCase())}`;
+
+@@Injectable({
+    providedIn: 'root'
+})
+export class @(Model.Name.AsPascaleCase())Repository extends BaseJoinRemoteRepositoryService<@(Model.Name.AsPascaleCase())> {
+
+    protected entityName = EntityType.@(Model.Name.AsPascaleCase());
+
+    protected context: ODataContext;
+    protected remoteStore: ODataStore;
+    protected authService: MsalService;
+    protected scopes = protectedResources.api.scopes.@(Model.Name.AsCamelCase());
+
+    constructor(authService: MsalService, protected dataEventService: DataEventService, private http: HttpClient) {
+        super();
+
+        this.authService = authService;
+
+        this.remoteStore = new ODataStore({
+            keyType: {@foreach(var key in Model.Keys) 
+            { 
+            <text>
+                @(key.Name.AsCamelCase()): DataFieldTypes.Guid,</text>
+            }
+            },
+            key: [@foreach(var key in Model.Keys) { <text>'@(key.Name.AsCamelCase())', </text> }],
+            version: 4,
+            url: url,
+            fieldTypes: @(Model.Name)ODataStoreModel.getFieldTypes(),
+            beforeSend: (e) => { e.headers['Authorization'] = `Bearer ${this.accessToken}`; }
+        });
+
+        this.context = new ODataContext({
+            url: url,
+            beforeSend: (e) => { e.headers['Authorization'] = `Bearer ${this.accessToken}`; }
+        });
+    }
+
+    async addTo@(model1.AsPascaleCase().AsPlural())(@(model2.AsCamelCase())Id: Guid, @(model1.AsCamelCase())Ids: Array<Guid>): Promise<void> {
+        let accessToken = await this.acquireTokenSilent(CrudScopeType.Modify);
+        const headers = { 'Authorization': `Bearer ${accessToken}` };
+        await lastValueFrom(this.http
+            .post(`${url}(${@(model2.AsCamelCase())Id})/AddTo@(model1.AsPascaleCase().AsPlural())`, { model: { @(model1.AsCamelCase())Ids: @(model1.AsCamelCase())Ids } }, { headers })
+            .pipe(
+                catchError(error => {
+                    if (error instanceof HttpErrorResponse) {
+                        notify({
+                            message: Common.getServerErrorMessage(error.error),
+                            position: {
+                                my: "right top",
+                                at: "right top",
+                                offset: { x: -15, y: 15 }
+                            }
+                        }, "error", 7000);
+                    } else {
+                        notify({
+                            message: error.message,
+                            position: {
+                                my: "right top",
+                                at: "right top",
+                                offset: { x: -15, y: 15 }
+                            }
+                        }, "error", 7000);
+                    }
+                    return of();
+                })
+            ));
+    }
+
+    async addTo@(model2.AsPascaleCase().AsPlural())(@(model1.AsCamelCase())Id: Guid, @(model2.AsCamelCase())Ids: Array<Guid>): Promise<void> {
+        let accessToken = await this.acquireTokenSilent(CrudScopeType.Modify);
+        const headers = { 'Authorization': `Bearer ${accessToken}` };
+        await lastValueFrom(this.http
+            .post(`${url}(${@(model1.AsCamelCase())Id})/AddTo@(model2.AsPascaleCase().AsPlural())`, { model: { @(model2.AsCamelCase())Ids: @(model2.AsCamelCase())Ids } }, { headers })
+            .pipe(
+                catchError(error => {
+                    if (error instanceof HttpErrorResponse) {
+                        notify({
+                            message: Common.getServerErrorMessage(error.error),
+                            position: {
+                                my: "right top",
+                                at: "right top",
+                                offset: { x: -15, y: 15 }
+                            }
+                        }, "error", 7000);
+                    } else {
+                        notify({
+                            message: error.message,
+                            position: {
+                                my: "right top",
+                                at: "right top",
+                                offset: { x: -15, y: 15 }
+                            }
+                        }, "error", 7000);
+                    }
+                    return of();
+                })
+            ));
+    }
+
+    protected castToInstance(entity: @(Model.Name)): @(Model.Name) {
+        return plainToInstance(@(Model.Name), entity);
+    }
+    
+    protected inform() {
+        this.dataEventService.inform@(Model.Name.AsPascaleCase().AsPlural())Changed();
+    }
+
+    protected removeLocalPropertiesFromEntity(entity: @(Model.Name)): void {@foreach (var navProperty in Model.NavigationProperties.Where(e => e.IsCollection).OrderBy(e => e.Name))
+    {
+        <text>
+        delete entity.@(navProperty.Name.AsCamelCase());</text>
+    }
+    }
+}

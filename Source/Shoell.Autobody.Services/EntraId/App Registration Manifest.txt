@@ -1,0 +1,72 @@
+{
+	"id": " 10fe07aa-d091-486f-8679-faad45ae4690",
+	"acceptMappedClaims": null,
+	"accessTokenAcceptedVersion": null,
+	"addIns": [],
+	"allowPublicClient": null,
+	"appId": "7ba0ef35-3759-4726-a194-28b2e2e2912a",
+	"appRoles": [],
+	"oauth2AllowUrlPathMatching": false,
+	"createdDateTime": "2024-03-08T22:00:05Z",
+	"description": null,
+	"certification": null,
+	"disabledByMicrosoftStatus": null,
+	"groupMembershipClaims": null,
+	"identifierUris": [
+		"api://7ba0ef35-3759-4726-a194-28b2e2e2912a"
+	],
+	"informationalUrls": {
+		"termsOfService": null,
+		"support": null,
+		"privacy": null,
+		"marketing": null
+	},
+	"keyCredentials": [],
+	"knownClientApplications": [],
+	"logoUrl": null,
+	"logoutUrl": null,
+	"name": "Shoell.Autobody.Api",
+	"notes": null,
+	"oauth2AllowIdTokenImplicitFlow": false,
+	"oauth2AllowImplicitFlow": false,
+	"oauth2Permissions": [
+		{ "id": "8ee91f6e-efca-48c5-a448-5a408f79701c", "value": "Group.Read", "adminConsentDescription": "Allow app to Read Groups", "adminConsentDisplayName": "Read Groups", "userConsentDescription": "Allow app to Read Groups", "userConsentDisplayName": "Read Groups", "isEnabled": true, "lang": null, "origin": "Application", "type": "Admin" },
+		{ "id": "916b34c1-e409-48f7-a725-58dd673d4788", "value": "Group.Modify", "adminConsentDescription": "Allow app to Modify Groups", "adminConsentDisplayName": "Modify Groups", "userConsentDescription": "Allow app to Modify Groups", "userConsentDisplayName": "Modify Groups", "isEnabled": true, "lang": null, "origin": "Application", "type": "Admin" },
+		{ "id": "53ad05d7-1aea-401c-9cf7-cf0feb2653a5", "value": "Group.Archive", "adminConsentDescription": "Allow app to Archive Groups", "adminConsentDisplayName": "Archive Groups", "userConsentDescription": "Allow app to Archive Groups", "userConsentDisplayName": "Archive Groups", "isEnabled": true, "lang": null, "origin": "Application", "type": "Admin" },
+		{ "id": "7b521676-c922-4568-95f1-3dc1af195815", "value": "Group.Recycle", "adminConsentDescription": "Allow app to Recycle Groups", "adminConsentDisplayName": "Recycle Groups", "userConsentDescription": "Allow app to Recycle Groups", "userConsentDisplayName": "Recycle Groups", "isEnabled": true, "lang": null, "origin": "Application", "type": "Admin" },
+
+		{ "id": "4a1b2ab7-f257-41d9-ac63-7e136bbe1280", "value": "Role.Read", "adminConsentDescription": "Allow app to Read Roles", "adminConsentDisplayName": "Read Roles", "userConsentDescription": "Allow app to Read Roles", "userConsentDisplayName": "Read Roles", "isEnabled": true, "lang": null, "origin": "Application", "type": "Admin" },
+
+		{ "id": "4748c061-d21b-4b4d-9d0c-5d61dad1e4a5", "value": "User.Read", "adminConsentDescription": "Allow app to Read Users", "adminConsentDisplayName": "Read Users", "userConsentDescription": "Allow app to Read Users", "userConsentDisplayName": "Read Users", "isEnabled": true, "lang": null, "origin": "Application", "type": "Admin" },
+		{ "id": "c71dc8cb-92f8-4d92-adbd-7e39944c4de0", "value": "User.Modify", "adminConsentDescription": "Allow app to Modify Users", "adminConsentDisplayName": "Update Users", "userConsentDescription": "Allow app to Modify Users", "userConsentDisplayName": "Modify Users", "isEnabled": true, "lang": null, "origin": "Application", "type": "Admin" },
+		{ "id": "dd7b8503-9cab-48a4-962f-b3f90b8ebebf", "value": "User.Archive", "adminConsentDescription": "Allow app to Archive Users", "adminConsentDisplayName": "Archive Users", "userConsentDescription": "Allow app to Archive Users", "userConsentDisplayName": "Archive Users", "isEnabled": true, "lang": null, "origin": "Application", "type": "Admin" },
+		{ "id": "35ae8ee8-0e01-4ae9-ac95-715e8179c011", "value": "User.Recycle", "adminConsentDescription": "Allow app to Recycle Users", "adminConsentDisplayName": "Recycle Users", "userConsentDescription": "Allow app to Recycle Users", "userConsentDisplayName": "Recycle Users", "isEnabled": true, "lang": null, "origin": "Application", "type": "Admin" }
+	],
+	"oauth2RequirePostResponse": false,
+	"optionalClaims": null,
+	"orgRestrictions": [],
+	"parentalControlSettings": {
+		"countriesBlockedForMinors": [],
+		"legalAgeGroupRule": "Allow"
+	},
+	"passwordCredentials": [],
+	"preAuthorizedApplications": [],
+	"publisherDomain": "company.com",
+	"replyUrlsWithType": [],
+	"requiredResourceAccess": [
+		{
+			"resourceAppId": "00000003-0000-0000-c000-000000000000",
+			"resourceAccess": [
+				{
+					"id": "e1fe6dd8-ba31-4d61-89e7-88639da4683d",
+					"type": "Scope"
+				}
+			]
+		}
+	],
+	"samlMetadataUrl": null,
+	"signInUrl": null,
+	"signInAudience": "AzureADMyOrg",
+	"tags": [],
+	"tokenEncryptionKeyId": null
+}

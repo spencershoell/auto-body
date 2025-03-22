@@ -1,0 +1,97 @@
+﻿@model List<EntityType>;
+@{
+    Layout = null;
+    var companyName = Model.FirstOrDefault()?.Config.CompanyName.AsPascaleCase() ?? string.Empty;
+    var projectName = Model.FirstOrDefault()?.Config.ProjectName.AsPascaleCase() ?? string.Empty;
+    var namespaces = Model
+        .Where(e => !string.IsNullOrEmpty(e.Namespace) &&  e.Namespace.AsPascaleCase() != "Identity")
+        .GroupBy(e => e.Namespace);
+}
+using Microsoft.AspNetCore.Authentication;
+using @(companyName).@(projectName).Data;
+using @(companyName).@(projectName).Identity;
+using @(companyName).@(projectName).Models.Identity;
+using @(companyName).@(projectName).Models.System;
+using @(companyName).Shared.Interfaces.Identity;
+using @(companyName).Shared.Types;
+@foreach (var ns in namespaces)
+{
+<text>using @(companyName).@(projectName).Identity@(ns.Key == string.Empty ? "" : ".")@(ns.Key);
+</text>
+}
+
+namespace @(companyName).@(projectName).Services
+{
+    public static class AuthorizationConfiguration
+    {
+        public static IServiceCollection Add@(projectName)Authorization(this IServiceCollection services)
+        {
+            services.AddScoped<IUserContext<User, Log>, @(projectName)Context>();
+            services.AddTransient<IClaimsTransformation, @(projectName)ClaimsTransformation>();
+
+            services.AddAuthorizationBuilder()
+                // Group
+                .AddPolicy(GroupRoles.Create, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [GroupRoles.Create]))
+                .AddPolicy(GroupRoles.Read, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [GroupRoles.Read, GroupRoles.Create, GroupRoles.Update, GroupRoles.Delete, GroupRoles.Archive, GroupRoles.Restore]))
+                .AddPolicy(GroupRoles.Update, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [GroupRoles.Update]))
+                .AddPolicy(GroupRoles.Delete, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [GroupRoles.Delete]))
+                .AddPolicy(GroupRoles.Recycle, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [GroupRoles.Recycle, GroupRoles.Recover, GroupRoles.Purge]))
+                .AddPolicy(GroupRoles.Recover, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [GroupRoles.Recover]))
+                .AddPolicy(GroupRoles.Purge, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [GroupRoles.Purge]))
+                .AddPolicy(GroupRoles.Archive, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [GroupRoles.Archive]))
+                .AddPolicy(GroupRoles.Restore, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [GroupRoles.Restore]))
+
+                // Role
+                .AddPolicy(RoleRoles.Read, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [RoleRoles.Read]))
+
+                // User
+                .AddPolicy(UserRoles.Create, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [UserRoles.Create]))
+                .AddPolicy(UserRoles.Read, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [UserRoles.Read, UserRoles.Create, UserRoles.Update, UserRoles.Delete, UserRoles.Archive, UserRoles.Restore]))
+                .AddPolicy(UserRoles.Update, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [UserRoles.Update]))
+                .AddPolicy(UserRoles.Delete, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [UserRoles.Delete]))
+                .AddPolicy(UserRoles.Recycle, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [UserRoles.Recycle, UserRoles.Recover, UserRoles.Purge]))
+                .AddPolicy(UserRoles.Recover, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [UserRoles.Recover]))
+                .AddPolicy(UserRoles.Purge, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [UserRoles.Purge]))
+                .AddPolicy(UserRoles.Archive, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [UserRoles.Archive, UserRoles.Restore]))
+                .AddPolicy(UserRoles.Restore, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [UserRoles.Restore]))
+
+                // Role_Group
+                .AddPolicy(Role_GroupRoles.Read, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [GroupRoles.Read, RoleRoles.Read]))
+                .AddPolicy(Role_GroupRoles.Modify, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [GroupRoles.Update]))
+
+                // User_Group
+                .AddPolicy(User_GroupRoles.Read, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [UserRoles.Read, GroupRoles.Read]))
+                .AddPolicy(User_GroupRoles.Modify, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [UserRoles.Update, GroupRoles.Update]))
+@{
+    foreach(var type in Model.Where(e => !(e.Keys.Count() > 1)))
+    {
+        var name = type.Name.AsPascaleCase();
+<text>
+                // @(name)
+                .AddPolicy(@(name)Roles.Create, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [@(name)Roles.Create]))
+                .AddPolicy(@(name)Roles.Read, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [@(name)Roles.Read, @(name)Roles.Create, @(name)Roles.Update, @(name)Roles.Delete, @(name)Roles.Archive, @(name)Roles.Restore]))
+                .AddPolicy(@(name)Roles.Update, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [@(name)Roles.Update]))
+                .AddPolicy(@(name)Roles.Delete, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [@(name)Roles.Delete]))
+                .AddPolicy(@(name)Roles.Recycle, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [@(name)Roles.Recycle, @(name)Roles.Recover, @(name)Roles.Purge]))
+                .AddPolicy(@(name)Roles.Recover, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [@(name)Roles.Recover]))
+                .AddPolicy(@(name)Roles.Purge, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [@(name)Roles.Purge]))
+                .AddPolicy(@(name)Roles.Archive, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [@(name)Roles.Archive, @(name)Roles.Restore]))
+                .AddPolicy(@(name)Roles.Restore, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [@(name)Roles.Restore]))
+</text>
+    }
+    foreach(var type in Model.Where(e => e.Keys.Count() > 1))
+    {
+        var name = type.Name.AsPascaleCase();
+        var model1 = type.Keys[0].Type.AsPascaleCase();
+        var model2 = type.Keys[1].Type.AsPascaleCase();
+        <text>
+                 // @(name)
+                .AddPolicy(@(name)Roles.Read, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [@(model1)Roles.Read, @(model2)Roles.Read]))
+                .AddPolicy(@(name)Roles.Modify, policy => policy.RequireClaim(ClaimTypes.@(projectName)Role, [@(model1)Roles.Update, @(model2)Roles.Update]))</text>
+    }
+};
+
+            return services;
+        }
+    }
+}

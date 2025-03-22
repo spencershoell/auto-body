@@ -1,0 +1,131 @@
+﻿@model EntityType;
+@{
+    Layout = null;
+
+    var navProperties = Model.NavigationProperties
+        .Where(e => !e.IsCollection && e.ForeignKey.AsCamelCase() != "id")
+        .OrderBy(e => e.Type)
+        .Select(e => e.Type)
+        .Distinct();
+}
+import { NgIf } from "@@angular/common";
+import { Component@{ if (Model.NavigationProperties.Count > 0) { <text>, Input</text> } } } from "@@angular/core";
+import { DxButtonModule, DxFormModule, DxLoadIndicatorModule, DxScrollViewModule, DxToolbarModule, DxValidationSummaryModule } from "devextreme-angular";
+import { SlidePanelService } from "src/app/layouts";
+import { Context, @(Model.Name.AsPascaleCase()) } from "src/app/data";
+import { BaseEditComponent, FormTextBoxComponent, FormTextAreaComponent@{
+    if (Model.Properties.Any(e => e.Type.GetJavascriptType() == "boolean | null"))
+    {
+        <text>, FormCheckBoxComponent</text>
+    }
+    if (Model.Properties.Any(e => e.Type.GetJavascriptType() == "Date | string | number"))
+    {
+        <text>, FormDateBoxComponent</text>
+    }
+    if (Model.Properties.Any(e => e.Type.GetJavascriptType() == "number"))
+    {
+        <text>, FormNumberBoxComponent</text>
+    }
+} } from "src/app/shared/components";
+import { AuthorizationService, DataEventService } from "src/app/shared/services";
+import { takeUntil } from "rxjs";
+import { EntityType } from "src/app/classes";
+import Guid from "devextreme/core/guid";
+import { @(Model.Name.AsPascaleCase())Store } from "src/app/data/stores";
+import { icon } from "@@fortawesome/fontawesome-svg-core";
+import { faBoxArchive, faFloppyDisk, faPen, faTrash } from "@@fortawesome/pro-solid-svg-icons";
+import { faBoxArchive as farBoxArchive } from "@@fortawesome/pro-regular-svg-icons";@{
+    foreach (var navType in Model.NavigationProperties.Where(e => !e.IsCollection && e.ForeignKey.AsCamelCase() != "id").Select(e => e.Type).Distinct())
+    {
+        var typeNamespace = Model.NavigationProperties.FirstOrDefault(e => e.Type == navType)?.TypeNamespace ?? string.Empty;
+<text>
+import { @(navType.AsPascaleCase())SelectComponent } from "src/app/shared/components/@{ if(!string.IsNullOrEmpty(typeNamespace)) { if (typeNamespace.ToLower() == "identity") { <text>_</text> } <text>@(typeNamespace.ToLower())/</text> } }@(navType.AsDashedLowerCase())/select.component";</text>
+    }
+}
+
+@@Component({
+    selector: '@(Model.Config.AppPrefix)-@(Model.Name.AsDashedLowerCase())-edit',
+    templateUrl: 'edit.component.html',
+    styleUrls: ['edit.component.scss'],
+    standalone: true,
+    imports: [
+        NgIf, DxButtonModule, DxFormModule, DxLoadIndicatorModule, DxScrollViewModule, DxToolbarModule, DxValidationSummaryModule,
+        FormTextBoxComponent, FormTextAreaComponent@{
+    if (Model.Properties.Any(e => e.Type.GetJavascriptType() == "boolean | null"))
+    {
+        <text>, FormCheckBoxComponent</text>
+    }
+    if (Model.Properties.Any(e => e.Type.GetJavascriptType() == "Date | string | number"))
+    {
+        <text>, FormDateBoxComponent</text>
+    }
+    if (Model.Properties.Any(e => e.Type.GetJavascriptType() == "number"))
+    {
+        <text>, FormNumberBoxComponent</text>
+    }   
+
+    if (navProperties.Any())
+    {
+<text>,
+        </text>
+    }
+    foreach (var navType in navProperties)
+    {
+        <text>@(navType.AsPascaleCase())SelectComponent, </text>
+    }
+}
+
+    ]
+})
+export class @(Model.Name)EditComponent extends BaseEditComponent<@(Model.Name), Guid> {
+    entityName: string = "@(Model.Name.AsSpacedPascaleCase())";
+    entityType: string = EntityType.@(Model.Name.AsPascaleCase());
+
+    @foreach (var navProperty in Model.NavigationProperties.Where(e => !e.IsCollection && e.ForeignKey.AsCamelCase() != "id"))
+    {
+<text>    @@Input() @(navProperty.ForeignKey.AsCamelCase())?: Guid;
+</text>
+    }
+
+    @foreach (var navProperty in Model.NavigationProperties.Where(e => !e.IsCollection && e.ForeignKey.AsCamelCase() != "id"))
+    {
+<text>    get show@(navProperty.Name.AsPascaleCase())(): boolean { return this.@(navProperty.ForeignKey.AsCamelCase()) == null; }
+</text>
+    }
+
+    override store: @(Model.Name.AsPascaleCase())Store;
+    model!: @(Model.Name.AsPascaleCase());
+
+    fasPen = icon(faPen).html[0];
+    fasFloppyDisk = icon(faFloppyDisk).html[0];
+    fasBoxArchive = icon(faBoxArchive).html[0];
+    farBoxArchive = icon(farBoxArchive).html[0];
+    fasTrash = icon(faTrash).html[0];
+
+    constructor(
+        protected dataEventService: DataEventService,
+        protected slideService: SlidePanelService,
+        override authorizationService: AuthorizationService,
+        protected context: Context
+    ) {
+        super();
+        this.validationGroup = `${EntityType.Group}-EditForm`;
+        this.store = context.@(Model.Name.AsCamelCase().AsPlural());
+    }
+
+    public override async ngOnInit(): Promise<void> {
+        await super.ngOnInit();
+
+        this.dataEventService.@(Model.Name.AsCamelCase().AsPlural())Changed$
+            .pipe(takeUntil(this._destroying$))
+            .subscribe(async () => {
+                if (!this.isEditing) {
+                    await this.refresh();
+                }
+            });
+    }
+
+    async close(): Promise<void> {
+        this.slideService.popComponent(@(Model.Name)EditComponent);
+    }
+}

@@ -1,0 +1,130 @@
+﻿@model EntityType;
+@{
+    Layout = null;
+}
+import { Component, ComponentRef, Input } from '@@angular/core';
+import DataSource from 'devextreme/data/data_source';
+import { DxButtonModule, DxDataGridModule, DxDropDownButtonModule } from 'devextreme-angular';
+import { RouterModule } from '@@angular/router';
+import { RowClickEvent } from 'devextreme/ui/data_grid';
+import { SlidePanelService } from 'src/app/layouts/slide-panel/slide-panel.services';
+import { BaseListComponent } from 'src/app/shared/components/_core';
+import { @(Model.Name.AsPascaleCase())DataGrid } from 'src/app/data/models';
+import { AuthorizationService, DataEventService } from 'src/app/shared/services';
+import { takeUntil } from "rxjs";
+import { @(Model.Name.AsPascaleCase())CreateComponent } from './create.component';
+import { @(Model.Name.AsPascaleCase())SlideComponent } from './slide.component';
+import { EntityType } from 'src/app/classes';
+import { NgIf } from '@@angular/common';
+import { Context } from 'src/app/data/context';
+import { icon } from '@@fortawesome/fontawesome-svg-core';
+import { faPlus } from '@@fortawesome/pro-solid-svg-icons';
+import { faRefresh } from '@@fortawesome/pro-light-svg-icons';@{
+    if (Model.NavigationProperties.Count > 0)
+    {
+<text>
+import { Guid } from "devextreme/common"</text>
+    }
+}
+
+@@Component({
+    selector: '@(Model.Config.AppPrefix)-@(Model.Name.AsDashedLowerCase())-list',
+    templateUrl: 'list.component.html',
+    styleUrls: ['list.component.scss'],
+    standalone: true,
+    imports: [NgIf, RouterModule, DxButtonModule, DxDataGridModule, DxDropDownButtonModule]
+})
+export class @(Model.Name)ListComponent extends BaseListComponent<@(Model.Name)DataGrid> {
+    override entityName: string = "@(Model.Name.AsSpacedPascaleCase())";
+    override entityType: string = EntityType.@(Model.Name);
+    override pluralizedEntityName: string = "@(Model.Name.AsSpacedPascaleCase().AsPlural())";
+
+    @@Input() outsideSlidePanel = false;
+
+    @foreach (var navProperty in Model.NavigationProperties.Where(e => !e.IsCollection))
+    {
+<text>    @@Input() @(navProperty.ForeignKey.AsCamelCase())?: Guid;
+</text>
+    }
+
+    @foreach (var navProperty in Model.NavigationProperties.Where(e => !e.IsCollection))
+    {
+<text>    get show@(navProperty.Name.AsPascaleCase())(): boolean { return this.@(navProperty.ForeignKey.AsCamelCase()) == null; }
+</text>
+    }
+
+    fasPlus = icon(faPlus).html[0];
+    falRefresh = icon(faRefresh).html[0];
+
+    constructor(
+        protected dataEventService: DataEventService,
+        override authorizationService: AuthorizationService,
+        override slidePanelService: SlidePanelService,
+        context: Context
+    ) {
+        super();
+        this._dataGrid = new @(Model.Name.AsPascaleCase())DataGrid();
+        this.dataSource = new DataSource({
+            store: context.@(Model.Name.AsCamelCase().AsPlural()),
+            select: this.buildSelect(),
+            filter: this.buildFilter(),
+            onLoadingChanged: this.onLoadingChanged.bind(this)
+        });
+    }
+
+    override async ngOnInit(): Promise<void> {
+        await super.ngOnInit();
+
+        this.dataEventService.@(Model.Name.AsCamelCase().AsPlural())Changed$
+            .pipe(takeUntil(this._destroying$))
+            .subscribe(async () => { await this.refresh(); });
+    }
+
+    override create() {
+        this.slidePanelService.pushComponent({
+            componentType: @(Model.Name.AsPascaleCase())CreateComponent,
+            setInputs: () => { },
+            forceOverlay: true,
+            title: `Create ${this.entityName}`
+        });
+    }
+
+    override onRowClick(e: RowClickEvent) {
+        if (e.rowType !== 'data') return;
+
+        const { data } = e;
+
+        this.slidePanelService.pushComponent({
+            componentType: @(Model.Name.AsPascaleCase())SlideComponent,
+            setInputs: (componentRef: ComponentRef<@(Model.Name.AsPascaleCase())SlideComponent>) => {
+                componentRef.instance.id = data.id;
+            },
+            clearSlidePanelBeforePush: this.outsideSlidePanel,
+            title: `${this.entityName} Details`
+        });
+    }
+
+    override prepareSelect(select: any[]): void {
+@foreach(var navProperty in Model.NavigationProperties.Where(e => !e.IsCollection))
+{
+<text>        if (this.show@(navProperty.Name.AsPascaleCase())) {
+            select.push('@(navProperty.ForeignKey.AsCamelCase())', '@(navProperty.Name.AsCamelCase()).name');
+        }
+</text>
+}    
+    }
+
+    override prepareFilter(filter: any[]): void {
+@foreach (var navProperty in Model.NavigationProperties.Where(e => !e.IsCollection))
+{
+<text>        if (this.@(navProperty.ForeignKey.AsCamelCase()) != null) {
+            if (filter.length > 0) {
+                filter.push('and');
+            }
+            filter.push(['@(navProperty.ForeignKey.AsCamelCase())', this.@(navProperty.ForeignKey.AsCamelCase())?.valueOf()]);
+        }
+</text>
+}  
+
+    }
+} 

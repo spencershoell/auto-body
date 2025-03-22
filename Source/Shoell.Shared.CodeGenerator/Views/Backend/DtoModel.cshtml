@@ -1,0 +1,20 @@
+﻿@model EntityType;
+@{
+    Layout = null;
+    var model1 = Model.Name.Split('_').First();
+    var model2 = Model.Name.Split('_').Last();
+}
+namespace @(Model.Config.CompanyName).@(Model.Config.ProjectName).Services.@(Model.Name.AsPascaleCase())DtoModels
+{
+    public class Add@(model2.AsPascaleCase())To@(model1.AsPascaleCase().AsPlural())Dto
+    {
+        public Guid @(model2.AsPascaleCase())Id { get; set; }
+        public List<Guid> @(model1.AsPascaleCase())Ids { get; set; } = [];
+    }
+
+    public class Add@(model1.AsPascaleCase())To@(model2.AsPascaleCase().AsPlural())Dto
+    {
+        public Guid @(model1.AsPascaleCase())Id { get; set; }
+        public List<Guid> @(model2.AsPascaleCase())Ids { get; set; } = [];
+    } 
+}

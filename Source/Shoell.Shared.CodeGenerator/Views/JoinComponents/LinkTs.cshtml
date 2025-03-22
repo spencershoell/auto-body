@@ -1,0 +1,181 @@
+﻿@model EntityType;
+@{
+    Layout = null;
+    var model1 = Model.NavigationProperties.First().Name;
+    var model2 = Model.NavigationProperties.Skip(1).First().Name;
+
+    var modelType1 = Model.NavigationProperties.First().Type;
+    var modelType2 = Model.NavigationProperties.Skip(1).First().Type;
+}
+import { NgIf } from "@@angular/common";
+import { Component, ComponentRef, Input, OnInit, ViewChild } from "@@angular/core";
+import { DxButtonModule, DxDataGridComponent, DxDataGridModule } from 'devextreme-angular';
+import Guid from 'devextreme/core/guid';
+import DataSource from "devextreme/data/data_source";
+import { Common } from 'src/app/classes';
+import { SlidePanelService } from "src/app/layouts/slide-panel/slide-panel.services";
+import { Context } from "src/app/data";
+import { faLink, faPlus } from "@@fortawesome/pro-solid-svg-icons";
+import { icon } from "@@fortawesome/fontawesome-svg-core";
+import { DataEventService } from "src/app/shared/services";
+import { Subject, takeUntil } from "rxjs";@{
+    foreach (var navType in Model.NavigationProperties
+        .Where(e => !e.IsCollection && e.ForeignKey.AsCamelCase() != "id")
+        .Select(e => e.Type)
+        .Distinct()
+    )
+    {
+        var typeNamespace = Model.NavigationProperties.FirstOrDefault(e => e.Type == navType)?.TypeNamespace ?? string.Empty;
+        <text>
+import { @(navType.AsPascaleCase())CreateComponent } from "src/app/shared/components/@{ if(!string.IsNullOrEmpty(typeNamespace)) { <text>@(typeNamespace)/</text> } }@(navType.AsDashedLowerCase())/create.component";</text>
+    }
+}
+
+@@Component({
+    selector: '@(Model.Config.AppPrefix)-@(Model.Name.AsDashedLowerCase())-link',
+    templateUrl: 'link.component.html',
+    styleUrls: ['link.component.scss'],
+    imports: [NgIf, DxButtonModule, DxDataGridModule]
+})
+export class @(Model.Name.AsPascaleCase())LinkComponent implements OnInit {
+    protected readonly _destroying$ = new Subject<void>();
+
+    @@ViewChild('@(model1.AsCamelCase().AsPlural())DataGrid', { static: false }) @(model1.AsCamelCase().AsPlural())DataGridComponent!: DxDataGridComponent;
+    @@ViewChild('@(model2.AsCamelCase().AsPlural())DataGrid', { static: false }) @(model2.AsCamelCase().AsPlural())DataGridComponent!: DxDataGridComponent;
+
+    // Block first change from triggering a reload, but reload directly after
+    protected _@(model1.AsCamelCase().AsPlural())IsLoading: boolean = true;
+    protected _@(model1.AsCamelCase().AsPlural())RefreshQueue: number = 1;
+    protected _@(model2.AsCamelCase().AsPlural())IsLoading: boolean = true;
+    protected _@(model2.AsCamelCase().AsPlural())RefreshQueue: number = 1;
+
+    @@Input() @(model1.AsCamelCase())Id?: Guid;
+    @@Input() @(model2.AsCamelCase())Id?: Guid;
+
+    get show@(model1.AsPascaleCase().AsPlural())(): boolean { return Common.isNull(this.@(model1.AsCamelCase())Id); }
+    get show@(model2.AsPascaleCase().AsPlural())(): boolean { return Common.isNull(this.@(model2.AsCamelCase())Id); }
+
+    @(model1.AsCamelCase().AsPlural())DataSource: DataSource;
+    @(model2.AsCamelCase().AsPlural())DataSource: DataSource;
+
+    selected@(model1.AsPascaleCase().AsPlural()): Guid[] = [];
+    selected@(model2.AsPascaleCase().AsPlural()): Guid[] = [];
+
+    fasLink = icon(faLink).html[0];
+    fasPlus = icon(faPlus).html[0];
+
+    constructor(
+        protected context: Context,
+        protected dataEventService: DataEventService,
+        protected slideService: SlidePanelService
+    ) {
+        this.@(model1.AsCamelCase().AsPlural())DataSource = new DataSource({
+            store: context.@(model1.AsCamelCase().AsPlural()),
+            select: ["id", "name"],
+            onLoadingChanged: this.on@(model1.AsPascaleCase().AsPlural())LoadingChanged.bind(this)
+        });
+
+        this.@(model2.AsCamelCase().AsPlural())DataSource = new DataSource({
+            store: context.@(model2.AsCamelCase().AsPlural()),
+            select: ["id", "name"],
+            onLoadingChanged: this.on@(model2.AsPascaleCase().AsPlural())LoadingChanged.bind(this)
+        });
+
+        this.ngOnInit = this.ngOnInit.bind(this);
+
+        this.create@(model1.AsPascaleCase()) = this.create@(model1.AsPascaleCase()).bind(this);
+        this.create@(model2.AsPascaleCase()) = this.create@(model2.AsPascaleCase()).bind(this);
+        this.add@(model1.AsPascaleCase())To@(model2.AsPascaleCase().AsPlural()) = this.add@(model1.AsPascaleCase())To@(model2.AsPascaleCase().AsPlural()).bind(this);
+        this.add@(model2.AsPascaleCase())To@(model1.AsPascaleCase().AsPlural()) = this.add@(model2.AsPascaleCase())To@(model1.AsPascaleCase().AsPlural()).bind(this);
+        this.refresh@(model1.AsPascaleCase().AsPlural()) = this.refresh@(model1.AsPascaleCase().AsPlural()).bind(this);
+        this.refresh@(model1.AsPascaleCase().AsPlural()) = this.refresh@(model1.AsPascaleCase().AsPlural()).bind(this);
+        this.on@(model1.AsPascaleCase().AsPlural())LoadingChanged = this.on@(model1.AsPascaleCase().AsPlural())LoadingChanged.bind(this);
+        this.on@(model2.AsPascaleCase().AsPlural())LoadingChanged = this.on@(model2.AsPascaleCase().AsPlural())LoadingChanged.bind(this);
+    }
+
+    public async ngOnInit(): Promise<void> {
+        this.dataEventService.@(model1.AsCamelCase().AsPlural())Changed$
+            .pipe(takeUntil(this._destroying$))
+            .subscribe(async () => { await this.refresh@(model1.AsPascaleCase().AsPlural())(); });
+
+        this.dataEventService.@(model2.AsCamelCase().AsPlural())Changed$
+            .pipe(takeUntil(this._destroying$))
+            .subscribe(async () => { await this.refresh@(model2.AsPascaleCase().AsPlural())(); });
+    }
+
+    create@(model1.AsPascaleCase())(): void {
+        this.slideService.pushComponent({
+            componentType: @(modelType1.AsPascaleCase())CreateComponent,
+            setInputs: (componentRef: ComponentRef<@(modelType1.AsPascaleCase())CreateComponent>) => {
+            },
+            title: `Create @(modelType1.AsPascaleCase())`,
+            forceOverlay: true
+        });
+    }
+
+    create@(model2.AsPascaleCase())(): void {
+        this.slideService.pushComponent({
+            componentType: @(modelType2.AsPascaleCase())CreateComponent,
+            setInputs: (componentRef: ComponentRef<@(modelType2.AsPascaleCase())CreateComponent>) => {
+            },
+            title: `Create @(modelType2.AsPascaleCase())`,
+            forceOverlay: true
+        });
+    }
+
+    async add@(model1.AsPascaleCase())To@(model2.AsPascaleCase().AsPlural())() {
+        await this.context.@(model1.AsCamelCase())_@(model2.AsPascaleCase().AsPlural()).addTo@(model2.AsPascaleCase().AsPlural())(this.@(model1.AsCamelCase())Id!, this.selected@(model2.AsPascaleCase().AsPlural()));
+        this.slideService.popComponent(@(Model.Name.AsPascaleCase())LinkComponent);
+    }
+
+     async add@(model2.AsPascaleCase())To@(model1.AsPascaleCase().AsPlural())() {
+        await this.context.@(model1.AsCamelCase())_@(model2.AsPascaleCase().AsPlural()).addTo@(model1.AsPascaleCase().AsPlural())(this.@(model2.AsCamelCase())Id!, this.selected@(model1.AsPascaleCase().AsPlural()));
+        this.slideService.popComponent(@(Model.Name.AsPascaleCase())LinkComponent);
+    }
+
+    async refresh@(model1.AsPascaleCase().AsPlural())(): Promise<void> {
+        if (this._@(model1.AsCamelCase().AsPlural())IsLoading) {
+            this._@(model1.AsCamelCase().AsPlural())RefreshQueue++;
+            return;
+        }
+
+        await this.@(model1.AsCamelCase().AsPlural())DataSource.reload();
+        if (this.@(model1.AsCamelCase().AsPlural())DataGridComponent.instance !== undefined) {
+            this.@(model1.AsCamelCase().AsPlural())DataGridComponent.instance.refresh();
+        }
+    }
+
+    async refresh@(model2.AsPascaleCase().AsPlural())(): Promise<void> {
+        if (this._@(model2.AsCamelCase().AsPlural())IsLoading) {
+            this._@(model2.AsCamelCase().AsPlural())RefreshQueue++;
+            return;
+        }
+
+        await this.@(model2.AsCamelCase().AsPlural())DataSource.reload();
+        if (this.@(model2.AsCamelCase().AsPlural())DataGridComponent.instance !== undefined) {
+            this.@(model2.AsCamelCase().AsPlural())DataGridComponent.instance.refresh();
+        }
+    }
+
+    protected async on@(model1.AsPascaleCase().AsPlural())LoadingChanged(isLoading: boolean) {
+        this._@(model1.AsCamelCase().AsPlural())IsLoading = isLoading;
+
+        if (isLoading === false) {
+            if (this._@(model1.AsCamelCase().AsPlural())RefreshQueue > 0) {
+                this._@(model1.AsCamelCase().AsPlural())RefreshQueue = 0;
+                await this.refresh@(model1.AsPascaleCase().AsPlural())();
+            }
+        }
+    }
+
+    protected async on@(model2.AsPascaleCase().AsPlural())LoadingChanged(isLoading: boolean) {
+        this._@(model2.AsCamelCase().AsPlural())IsLoading = isLoading;
+
+        if (isLoading === false) {
+            if (this._@(model2.AsCamelCase().AsPlural())RefreshQueue > 0) {
+                this._@(model2.AsCamelCase().AsPlural())RefreshQueue = 0;
+                await this.refresh@(model2.AsPascaleCase().AsPlural())();
+            }
+        }
+    }
+}

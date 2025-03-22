@@ -1,0 +1,71 @@
+﻿@model EntityType;
+@{
+    Layout = null;
+}
+<ng-container *ngIf="model">
+    <div class="detail-header">
+        <dx-toolbar>
+            <dxi-item location="before">
+                <dx-button [icon]="falArrowLeft" stylingMode="text" hint="Go Back" (click)="goBack()"></dx-button>
+            </dxi-item>
+            <dxi-item location="before" [text]="model.name"></dxi-item>
+            <dxi-item location="after">
+                <dx-button [icon]="falRefresh" stylingMode="text" hint="Refresh" (click)="refresh()"></dx-button>
+            </dxi-item>
+        </dx-toolbar>
+    </div>
+    <div class="detail-body">
+        <dx-responsive-box singleColumnScreen="sm">
+            <dxi-row [ratio]="1"></dxi-row>
+
+            <dxi-col [ratio]="5" screen="lg"></dxi-col>
+            <dxi-col [ratio]="9" screen="lg"></dxi-col>
+
+            <dxi-col [ratio]="5" screen="md"></dxi-col>
+            <dxi-col [ratio]="9" screen="md"></dxi-col>
+
+            <dxi-col [ratio]="1" screen="sm"></dxi-col>
+
+            <dxi-col [ratio]="1" screen="xs"></dxi-col>
+
+            <dxi-item class="detail-edit">
+                <dxi-location [row]="0" [col]="0" screen="lg"></dxi-location>
+                <dxi-location [row]="0" [col]="0" screen="md"></dxi-location>
+
+                <@(Model.Config.AppPrefix)-@(Model.Name.AsDashedLowerCase())-edit [id]="id"></@(Model.Config.AppPrefix)-@(Model.Name.AsDashedLowerCase())-edit>
+            </dxi-item>
+            <dxi-item class="detail-tabs" [ngClass]="{'detail-tabs-small': isSmallScreen}">
+                <dxi-location [row]="0" [col]="1" screen="lg"></dxi-location>
+                <dxi-location [row]="0" [col]="1" screen="md"></dxi-location>
+
+                <dxi-location [row]="0" [col]="0" screen="sm"></dxi-location>
+                <dxi-location [row]="0" [col]="0" screen="xs"></dxi-location>
+
+                <dx-tab-panel height="100%" [loop]="false" [animationEnabled]="true" [swipeEnabled]="false" [items]="[@foreach(var navProperty in Model.NavigationProperties.FilterCollection(Model.Name))
+                {
+                <text>
+                    { title: '@(navProperty.Name.AsSpacedPascaleCase())', template: '@(navProperty.Name.AsCamelCase())Template' },</text>
+                }
+                    
+                    { title: 'Logs', template: 'logsTemplate' }
+                ]">
+                    <div *dxTemplate="let template of 'detailsTemplate'">
+                        <@(Model.Config.AppPrefix)-@(Model.Name.AsDashedLowerCase())-edit [id]="id"></@(Model.Config.AppPrefix)-@(Model.Name.AsDashedLowerCase())-edit>
+                    </div>
+                @foreach (var navProperty in Model.NavigationProperties.FilterCollection(Model.Name))   
+                {
+                    <div *dxTemplate="let template of '@(navProperty.Name.AsCamelCase())Template'">
+                        <@(Model.Config.AppPrefix)-@(navProperty.Type.AsDashedLowerCase())-list [@(navProperty.Partner.AsCamelCase())Id]="id">@Html.Raw($"</{Model.Config.AppPrefix}-{navProperty.Type.AsDashedLowerCase()}-list>")
+                    </div>
+                }      
+                    <div *dxTemplate="let template of 'logsTemplate'">
+                        <@(Model.Config.AppPrefix)-log-list [store]="logStore"></@(Model.Config.AppPrefix)-log-list>
+                    </div>
+                </dx-tab-panel>
+            </dxi-item>
+        </dx-responsive-box>
+    </div>
+</ng-container>
+<div *ngIf="!model" class="detail-load-indicator-wrapper">
+    <dx-load-indicator class="detail-load-indicator" [height]="50" [width]="50"></dx-load-indicator>
+</div>

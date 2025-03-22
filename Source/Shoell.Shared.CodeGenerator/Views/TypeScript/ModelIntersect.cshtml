@@ -1,0 +1,59 @@
+﻿@* @model EntityType;
+@{
+    Layout = null;
+}
+import Guid from 'devextreme/core/guid';
+import { Type as ClassType } from 'class-transformer';
+import { DataFieldTypes, DataGridColumn } from 'src/app/classes';
+import { @foreach (var navPropertyTypeName in Model.NavigationProperties
+    .Where(e => e.TypeName.ToUpper() != Model.Name.ToUpper())
+    .OrderBy(e => e.TypeName)
+    .Select(e => e.TypeName)
+    .Distinct()) 
+    { <text>@(navPropertyTypeName.AsPascaleCase()), </text> }} from '..';
+
+export class @(Model.Name.AsPascaleCase()) {@foreach(var property in Model.Properties.OrderBy(e => e.Name)) {     
+<text>
+    @(property.Name.AsCamelCase())?: @(property.TypeName.GetJavascriptType());</text>
+}
+   
+@foreach (var navProperty in Model.NavigationProperties.Where(e => !e.IsCollection).OrderBy(e => e.Name))
+{
+<text>
+    @@ClassType(() => @(navProperty.TypeName.AsPascaleCase()))
+    @(navProperty.Name.AsCamelCase())?: @(navProperty.TypeName.AsPascaleCase());</text>
+}
+
+@foreach (var navProperty in Model.NavigationProperties.Where(e => e.IsCollection).OrderBy(e => e.Name))
+{
+<text>
+    @@ClassType(() => Array<@(navProperty.TypeName.AsPascaleCase())>)
+    @(navProperty.Name.AsCamelCase())?: @(navProperty.TypeName.AsPascaleCase())[];</text>
+}
+}
+
+export class @(Model.Name.AsPascaleCase())ODataStoreModel {
+    public static getFieldTypes(): any {
+        return {@foreach (var property in Model.Properties.Where(e => e.TypeName.GetJavascriptType() != "Date").OrderBy(e => e.Name))
+    {
+        <text>
+            @(property.Name.AsCamelCase()): DataFieldTypes.@(property.TypeName.GetDataFieldType()),</text>
+    }
+        
+        }
+    }
+}
+
+export class @(Model.Name.AsPascaleCase())DataGrid {
+    id = new DataGridColumn({ dataField: 'id', visible: false, showInColumnChooser: false });
+    rowId = new DataGridColumn({ dataField: 'rowId', visible: false, showInColumnChooser: false });
+@foreach(var property in Model.Properties.Where(e => e.Name != "id" && e.Name != "rowId" && e.Name != "name").OrderBy(e => e.Name)) {
+<text>
+    @(property.Name.AsCamelCase()) = new DataGridColumn({ dataField: '@(property.Name.AsCamelCase())', visible: false, showInColumnChooser: false });</text>
+}
+
+
+    buildColumns(columns: any): void {
+        DataGridColumn.buildColumns(columns);
+    }
+} *@

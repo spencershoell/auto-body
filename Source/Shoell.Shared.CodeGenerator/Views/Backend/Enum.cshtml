@@ -1,0 +1,19 @@
+﻿@model EntityEnum;
+@{
+	Layout = null;
+	var companyName = Model.Config.CompanyName.AsPascaleCase();
+	var projectName = Model.Config.ProjectName.AsPascaleCase();
+	var ns = (Model.Namespace == string.Empty) ? string.Empty : $".{Model.Namespace}";
+	var name = Model.Name.AsPascaleCase();
+}
+namespace @(companyName).Shared.Types
+{
+	public enum @(name)
+	{@foreach(var property in Model.Properties)
+{
+<text>
+		@(property.Name)@if (!string.IsNullOrEmpty(property.Value)) { <text> = @(property.Value)</text> },</text>
+}
+
+	}
+}

@@ -1,0 +1,134 @@
+﻿@model EntityType;
+@{
+    Layout = null;
+}
+@if (Model.Properties.Any(e => e.Type.GetCSharpType() == "Guid") || Model.NavigationProperties.Any(e => !e.IsCollection)) 
+{ 
+<text>import Guid from 'devextreme/core/guid';
+</text> 
+}
+@if (Model.NavigationProperties.Any()) 
+{ 
+<text>import { Type } from 'class-transformer';
+</text> 
+}
+import { DataFieldTypes, DataGridColumn } from 'src/app/classes';
+import { @{
+    if (!string.IsNullOrEmpty(Model.BaseType))
+    {
+        <text>@(Model.BaseType), @(Model.BaseType)ODataStore, @(Model.BaseType)DataGrid, </text>
+    } 
+    else 
+    {
+        <text>IDataGrid, </text>
+    }
+    foreach (var navPropertyTypeName in Model.NavigationProperties
+        .Where(e => e.Type.ToUpper() != Model.Name.ToUpper())
+        .OrderBy(e => e.Type)
+        .Select(e => e.Type)
+        .Distinct()) 
+    { 
+        <text>@(navPropertyTypeName.AsPascaleCase()), </text> 
+    }    
+}} from '..';
+@if(Model.Properties.Any(e => e.IsEnum))
+{
+<text>import { </text>
+    foreach (var navPropertyTypeName in Model.Properties
+        .Where(e => e.Type.ToUpper() != Model.Name.ToUpper())
+        .Where(e => e.IsEnum)
+        .OrderBy(e => e.Type)
+        .Select(e => e.Type)
+        .Distinct()) 
+    { 
+        <text>@(navPropertyTypeName.AsPascaleCase()), </text> 
+    }
+<text>} from '@{if (!string.IsNullOrEmpty(Model.Namespace)) { <text>../</text> } }..'
+</text>
+}
+
+export class @(Model.Name.AsPascaleCase())@if (!string.IsNullOrEmpty(Model.BaseType)) { <text> extends @(Model.BaseType)</text> } {
+    @foreach(var property in Model.Properties) 
+    {     
+		var overrideKeyword = (Model.BaseType.ToLower() == "basemodel" && (property.Name.ToLower() == "name" || property.Name.ToLower() == "description")) ? "override " : string.Empty;
+<text>    @(overrideKeyword)@(property.Name.AsCamelCase())?: @(property.Type.GetJavascriptType());
+</text>
+    }
+    @if (Model.Properties.Any() && Model.NavigationProperties.Any(e => !e.IsCollection))
+    {
+<text>
+</text>
+    }
+    @foreach (var navProperty in Model.NavigationProperties.Where(e => !e.IsCollection && e.ForeignKey.AsCamelCase() != "id"))
+    {
+<text>    @(navProperty.ForeignKey.AsCamelCase())?: Guid;
+</text>
+    }
+
+    @foreach (var navProperty in Model.NavigationProperties.Where(e => !e.IsCollection))
+    {
+<text>    @@Type(() => @(navProperty.Type.AsPascaleCase()))
+    @(navProperty.Name.AsCamelCase())?: @(navProperty.Type.AsPascaleCase());
+</text>
+    }
+@if ((Model.Properties.Any() || Model.NavigationProperties.Any(e => !e.IsCollection)) && Model.NavigationProperties.Any(e => e.IsCollection))
+    {
+<text>
+</text>
+    }
+    @foreach (var navProperty in Model.NavigationProperties.Where(e => e.IsCollection))
+    {
+<text>    @@Type(() => Array<@(navProperty.Type.AsPascaleCase())>)
+    @(navProperty.Name.AsCamelCase())?: @(navProperty.Type.AsPascaleCase())[];
+</text>
+    }
+}
+
+export class @(Model.Name.AsPascaleCase())ODataStore @if (!string.IsNullOrEmpty(Model.BaseType)) { <text>extends @(Model.BaseType)ODataStore </text> }{
+    public static @if(!string.IsNullOrEmpty(Model.BaseType)) {<text>override </text> }getFieldTypes() {
+        let fieldTypes:any = @if(!string.IsNullOrEmpty(Model.BaseType)) { <text>super.getFieldTypes()</text> } else { <text>{}</text> };
+@foreach (var navProperty in Model.NavigationProperties.Where(e => !e.IsCollection && e.ForeignKey.AsCamelCase() != "id"))
+{
+<text>        fieldTypes.@(navProperty.ForeignKey.AsCamelCase()) = DataFieldTypes.Guid;
+</text>
+}
+
+@foreach (var property in Model.Properties.Where(e => !string.IsNullOrEmpty(e.Type.GetDataFieldType())))
+{
+<text>
+        fieldTypes.@(property.Name.AsCamelCase()) = DataFieldTypes.@(property.Type.GetDataFieldType());</text>
+}
+
+
+        return fieldTypes;
+    }
+}
+
+export class @(Model.Name.AsPascaleCase())DataGrid @if (!string.IsNullOrEmpty(Model.BaseType)) { <text>extends @(Model.BaseType)DataGrid </text> } else { <text>implements IDataGrid </text> }{
+    @foreach(var property in Model.Properties) 
+    {
+		var overrideKeyword = (Model.BaseType.ToLower() == "basemodel" && (property.Name.ToLower() == "name" || property.Name.ToLower() == "description")) ? "override " : string.Empty;
+<text>    @(overrideKeyword)@(property.Name.AsCamelCase()) = new DataGridColumn({ dataField: '@(property.Name.AsCamelCase())' });
+</text>
+    }
+
+@foreach (var navProperty in Model.NavigationProperties.Where(e => !e.IsCollection && e.ForeignKey.AsCamelCase() != "id"))
+{
+<text>    @(navProperty.ForeignKey.AsCamelCase()) = new DataGridColumn({ dataField: '@(navProperty.ForeignKey.AsCamelCase())' });
+</text>
+}
+@if (!string.IsNullOrEmpty(Model.BaseType))
+{
+<text>    override buildColumns(columns: any): void {
+        return super.buildColumns(columns);
+    }
+</text>
+}
+else
+{
+<text>    buildColumns(columns: any): void {
+        DataGridColumn.buildColumns(columns);
+    }
+</text>
+}
+}

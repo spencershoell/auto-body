@@ -1,0 +1,25 @@
+<div class="layout-header">
+    <header>
+        <dx-toolbar class="header-toolbar">
+            <dxi-item location="before" menuItemTemplate="menuItem">
+                <div *dxTemplate="let data of 'menuItem'">
+                    <img src='/assets/site-logo-light.png' height='50' />
+                </div>
+            </dxi-item>
+        </dx-toolbar>
+    </header>
+</div>
+<div class="layout-content">
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <div class="dx-card">
+                    <h3 class="heading">Getting you access to this resource</h3>
+                    <div class="load-indicator">
+                        <dx-load-indicator height="64" width="64"></dx-load-indicator>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

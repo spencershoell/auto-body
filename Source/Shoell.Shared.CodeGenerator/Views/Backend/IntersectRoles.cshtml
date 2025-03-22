@@ -1,0 +1,24 @@
+﻿@* @model EntityType;
+@{
+    Layout = null;
+}
+@if (Model.Name == "File")
+{
+    <text>using File = @(Model.Config.CompanyName).@(Model.Config.ProjectName).Models.File;</text>
+}
+@if (Model.Name == "Task")
+{
+    <text>using Task = @(Model.Config.CompanyName).@(Model.Config.ProjectName).Models.File;</text>
+}
+using @(Model.Config.CompanyName).@(Model.Config.ProjectName).Models;
+
+namespace @(Model.Config.CompanyName).@(Model.Config.ProjectName).Identity
+{
+    public static class @(Model.Name.AsPascaleCase())Roles
+    {
+        private static readonly string _prefix = @(Model.Name.AsPascaleCase()).EntityType.Type;
+
+        public static readonly string Read = $"{_prefix}.{ProjectAction.Read}";
+        public static readonly string Modify = $"{_prefix}.{ProjectAction.Modify}";
+    }
+} *@

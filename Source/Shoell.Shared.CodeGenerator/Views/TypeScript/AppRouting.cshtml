@@ -1,0 +1,65 @@
+﻿@model List<EntityType>
+@{
+    Layout = null;
+}
+import { NgModule } from '@@angular/core';
+import { RouterModule, Routes } from '@@angular/router';
+import { MsalGuard } from '@@azure/msal-angular';
+import { UserListPageComponent } from 'src/app/pages/_identity/user/list.page';
+import { UserDetailPageComponent } from 'src/app/pages/_identity/user/detail.page';
+import { GroupListPageComponent } from 'src/app/pages/_identity/group/list.page';
+import { GroupDetailPageComponent } from 'src/app/pages/_identity/group/detail.page';
+@foreach (var entityType in Model.Where(e => !(e.Keys.Count > 1)).OrderBy(e => e.Name))
+{
+<text>import { @(entityType.Name.AsPascaleCase())ListPageComponent } from 'src/app/pages/@(string.IsNullOrEmpty(entityType.Namespace) ? "" : $"{entityType.Namespace}/")@(entityType.Name.AsDashedLowerCase())/list.page';
+import { @(entityType.Name.AsPascaleCase())DetailPageComponent } from 'src/app/pages/@(string.IsNullOrEmpty(entityType.Namespace) ? "" : $"{entityType.Namespace}/")@(entityType.Name.AsDashedLowerCase())/detail.page';
+</text>
+}
+
+const routes: Routes = [    
+    {
+        path: 'user',
+        component: UserListPageComponent,
+        canActivate: [MsalGuard]
+    },
+    {
+        path: 'user/:id',
+        component: UserDetailPageComponent,
+        canActivate: [MsalGuard]
+    },
+    {
+        path: 'group',
+        component: GroupListPageComponent,
+        canActivate: [MsalGuard]
+    },
+    {
+        path: 'group/:id',
+        component: GroupDetailPageComponent,
+        canActivate: [MsalGuard]
+    },
+@foreach (var entityType in Model.Where(e => !(e.Keys.Count > 1)).OrderBy(e => e.Name))
+{
+<text>
+    {
+        path: '@(entityType.Name.AsDashedLowerCase())',
+        component: @(entityType.Name.AsPascaleCase())ListPageComponent,
+        canActivate: [MsalGuard]
+    },
+    {
+        path: '@(entityType.Name.AsDashedLowerCase())/:id',
+        component: @(entityType.Name.AsPascaleCase())DetailPageComponent,
+        canActivate: [MsalGuard]
+    },</text>
+}
+
+    {
+        path: '**',
+        redirectTo: 'user'
+    }
+];
+
+@@NgModule({
+  imports: [RouterModule.forRoot(routes, { useHash: false })],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }

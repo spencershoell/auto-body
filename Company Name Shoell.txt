@@ -1,6 +1,6 @@
 Company Name: Shoell
 Project Name: Autobody
-Solution Root Path: C:\git\Shoell\Autobody
+Solution Root Path: C:\Git\spencershoell\auto-body\Source
 
 Tenant ID: 87b57f75-016d-4e16-bc51-f63021e6d7d9
 Primary Domain: shoell.com

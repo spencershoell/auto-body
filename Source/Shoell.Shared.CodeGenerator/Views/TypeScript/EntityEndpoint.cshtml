@@ -1,0 +1,28 @@
+﻿@model List<EntityType>
+@{
+    Layout = null;
+    var namespaces = Model.GroupBy(e => e.Namespace);
+}
+export class EntityEndpoint {
+    // Identity
+    static Me = 'Me';
+    static Group = 'Groups';
+    static Role = 'Roles';
+    static User = 'Users';
+    static Role_Group = 'Role_Groups';
+    static User_Group = 'User_Groups';
+
+    // System
+    static Log = 'Logs';
+@foreach (var ns in namespaces)
+{
+<text>
+    // @(ns.Key)
+</text>
+    @foreach (var type in ns.OrderBy(e => e.Name))
+    {
+<text>    static @(type.Name.AsPascaleCase()) = '@(type.Name.AsPascaleCase().AsPlural())';
+</text>
+    }
+}
+}

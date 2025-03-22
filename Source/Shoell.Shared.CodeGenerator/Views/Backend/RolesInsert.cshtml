@@ -1,0 +1,58 @@
+﻿@model List<EntityType>;
+@{
+    Layout = null;
+}
+@foreach(var entityType in Model)
+{
+	var typeName = entityType.Name.AsPascaleCase();
+<text>
+-- @(typeName)
+IF (0 = (SELECT COUNT(*) FROM [Identity].[Roles] WHERE [Name] = '@(typeName).Create'))
+	INSERT INTO [Identity].[Roles]
+			([Id],[Name],[NormalizedName],[ConcurrencyStamp])
+			VALUES (NEWID(), '@(typeName).Create', UPPER('@(typeName).Create'), NEWID())
+IF (0 = (SELECT COUNT(*) FROM [Identity].[Roles] WHERE [Name] = '@(typeName).Read'))
+	INSERT INTO [Identity].[Roles]
+			([Id],[Name],[NormalizedName],[ConcurrencyStamp])
+			VALUES (NEWID(), '@(typeName).Read', UPPER('@(typeName).Read'), NEWID())
+IF (0 = (SELECT COUNT(*) FROM [Identity].[Roles] WHERE [Name] = '@(typeName).Update'))
+	INSERT INTO [Identity].[Roles]
+			([Id],[Name],[NormalizedName],[ConcurrencyStamp])
+			VALUES (NEWID(), '@(typeName).Update', UPPER('@(typeName).Update'), NEWID())
+IF (0 = (SELECT COUNT(*) FROM [Identity].[Roles] WHERE [Name] = '@(typeName).Delete'))
+	INSERT INTO [Identity].[Roles]
+			([Id],[Name],[NormalizedName],[ConcurrencyStamp])
+			VALUES (NEWID(), '@(typeName).Delete', UPPER('@(typeName).Delete'), NEWID())
+IF (0 = (SELECT COUNT(*) FROM [Identity].[Roles] WHERE [Name] = '@(typeName).Recycle'))
+	INSERT INTO [Identity].[Roles]
+			([Id],[Name],[NormalizedName],[ConcurrencyStamp])
+			VALUES (NEWID(), '@(typeName).Recycle', UPPER('@(typeName).Recycle'), NEWID())
+IF (0 = (SELECT COUNT(*) FROM [Identity].[Roles] WHERE [Name] = '@(typeName).Recover'))
+	INSERT INTO [Identity].[Roles]
+			([Id],[Name],[NormalizedName],[ConcurrencyStamp])
+			VALUES (NEWID(), '@(typeName).Recover', UPPER('@(typeName).Recover'), NEWID())
+IF (0 = (SELECT COUNT(*) FROM [Identity].[Roles] WHERE [Name] = '@(typeName).Purge'))
+	INSERT INTO [Identity].[Roles]
+			([Id],[Name],[NormalizedName],[ConcurrencyStamp])
+			VALUES (NEWID(), '@(typeName).Purge', UPPER('@(typeName).Purge'), NEWID())
+IF (0 = (SELECT COUNT(*) FROM [Identity].[Roles] WHERE [Name] = '@(typeName).Archive'))
+	INSERT INTO [Identity].[Roles]
+			([Id],[Name],[NormalizedName],[ConcurrencyStamp])
+			VALUES (NEWID(), '@(typeName).Archive', UPPER('@(typeName).Archive'), NEWID())
+IF (0 = (SELECT COUNT(*) FROM [Identity].[Roles] WHERE [Name] = '@(typeName).Restore'))
+	INSERT INTO [Identity].[Roles]
+			([Id],[Name],[NormalizedName],[ConcurrencyStamp])
+			VALUES (NEWID(), '@(typeName).Restore', UPPER('@(typeName).Restore'), NEWID())
+</text>
+}
+
+TRUNCATE TABLE [Identity].[Role_Groups]
+
+INSERT INTO [Identity].[Role_Groups] ([RoleId], [GroupId])
+	SELECT
+			[Id]
+		,'720362b3-097b-4bb8-9321-37b899de6f4e'
+	FROM [Identity].[Roles]
+
+EXEC [Identity].[sp_ApplyPermissions];
+

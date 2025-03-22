@@ -1,0 +1,22 @@
+﻿@model EntityType;
+@{
+	Layout = null;
+	var companyName = Model.Config.CompanyName.AsPascaleCase();
+	var projectName = Model.Config.ProjectName.AsPascaleCase();
+	var ns = (Model.Namespace == string.Empty) ? string.Empty : $".{Model.Namespace}";
+	var name = Model.Name.AsPascaleCase();
+	var baseType = (Model.BaseType != string.Empty) ? $" : I{Model.BaseType}" : string.Empty;
+	var displayNew = (Model.BaseType != string.Empty) ? " new" : string.Empty;
+}
+using @(companyName).Shared.Interfaces.System;
+using Microsoft.EntityFrameworkCore;
+
+namespace @(companyName).Shared.Interfaces@(ns)
+{
+	public interface I@(name)Context<TEntity, TLog> : ILogContext<TLog>
+		where TEntity : class, I@(name)
+		where TLog : class, ILog
+	{
+		DbSet<TEntity> @(name.AsPlural()) { get; }
+	}
+}

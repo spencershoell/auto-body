@@ -1,0 +1,72 @@
+<dx-data-grid height="100%" [allowColumnReordering]="true" [allowColumnResizing]="true"
+  [columnAutoWidth]="true" [columnHidingEnabled]="true" [dataSource]="dataSource" [focusedRowEnabled]="true"
+  [remoteOperations]="true" [rowAlternationEnabled]="true" [showBorders]="true" [showColumnLines]="false"
+  [showRowLines]="true" [wordWrapEnabled]="true" [disabled]="disabled" (onExporting)="onExporting($event)"
+  (onRowClick)="onRowClick($event)">
+  <dxo-column-chooser [enabled]="true" mode="select"></dxo-column-chooser>
+  <dxo-editing mode="row" refreshMode="full" [allowAdding]="false" [allowUpdating]="false" [allowDeleting]="false">
+  </dxo-editing>
+  <dxo-filter-panel [visible]="false"></dxo-filter-panel>
+  <dxo-filter-row [visible]="false"></dxo-filter-row>
+  <dxo-group-panel [visible]="false"></dxo-group-panel>
+  <dxo-grouping #expand [autoExpandAll]="true" [contextMenuEnabled]="false"></dxo-grouping>
+  <dxo-header-filter [visible]="false"></dxo-header-filter>
+  <dxo-keyboard-navigation enterKeyAction="startEdit" enterKeyDirection="row" [editOnKeyPress]="true">
+  </dxo-keyboard-navigation>
+  <dxo-load-panel [showPane]="true"></dxo-load-panel>
+  <dxo-paging [enabled]="true" [pageSize]="100"></dxo-paging>
+  <dxo-scrolling mode="virtual" rowRenderingMode="virtual" [preloadEnabled]="true"></dxo-scrolling>
+  <dxo-sorting mode="multiple"></dxo-sorting>
+  <dxo-search-panel [visible]="true" [searchVisibleColumnsOnly]="false"></dxo-search-panel>
+  <dxo-selection selectAllMode="allPages" showCheckBoxesMode="always" mode="multiple"></dxo-selection>
+  <dxo-toolbar>
+    <dxi-item [visible]="showTitle" location="before" locateInMenu="auto">
+      <div *dxTemplate>
+        <div class="grid-header">{{title}}</div>
+      </div>
+    </dxi-item>
+    <dxi-item location="before">
+      <dx-drop-down-button stylingMode="text" [useSelectMode]="true" [items]="filterStatusList"
+        [dropDownOptions]="{ width: '112px' }" [selectedItemKey]="filterStatusList[1]"
+        (onSelectionChanged)="filterByStatus($event)"></dx-drop-down-button>
+    </dxi-item>
+    <dxi-item location="before" name="groupPanel" locateInMenu="auto"></dxi-item>
+    <dxi-item [visible]="canCreate" location="after" locateInMenu="auto">
+      <div *dxTemplate>
+        <dx-button stylingMode="contained" type="default" [icon]="fasPlus" text="Add {{entityName}}" (onClick)="create()">
+        </dx-button>
+      </div>
+    </dxi-item>
+    <dxi-item location="after" locateInMenu="auto" showText="inMenu" widget="dxButton"
+      [options]="{ text: 'Refresh', icon: falRefresh, onClick: refresh, hint: 'Refresh List' }"></dxi-item>
+    <dxi-item name="addRowButton"></dxi-item>
+    <dxi-item name="saveButton"></dxi-item>
+    <dxi-item name="revertButton"></dxi-item>
+    <dxi-item location="after" locateInMenu="auto">
+      <div class="separator"></div>
+    </dxi-item>
+    <dxi-item name="exportButton"></dxi-item>
+    <dxi-item location="after" locateInMenu="auto">
+      <div class="separator"></div>
+    </dxi-item>
+    <dxi-item name="columnChooserButton" locateInMenu="auto"></dxi-item>
+    <dxi-item name="searchPanel" locateInMenu="auto"></dxi-item>
+  </dxo-toolbar>
+  <dxi-column dataField="name" cellTemplate="nameTemplate" [hidingPriority]="dataGrid.name.hidingPriority"
+    [showInColumnChooser]="dataGrid.name.showInColumnChooser" [sortIndex]="dataGrid.name.sortIndex"
+    [sortOrder]="dataGrid.name.sortOrder" [visible]="dataGrid.name.visible" [visibleIndex]="dataGrid.name.visibleIndex">
+    <div *dxTemplate="let item of 'nameTemplate'">
+      <a *ngIf="item.data.id" [routerLink]="['/user', item.data.id?._value]">{{item.value}}</a>
+    </div>
+  </dxi-column>
+  <dxi-column dataField="email" [hidingPriority]="dataGrid.email.hidingPriority"
+    [showInColumnChooser]="dataGrid.email.showInColumnChooser" [sortIndex]="dataGrid.email.sortIndex"
+    [sortOrder]="dataGrid.email.sortOrder" [visible]="dataGrid.email.visible"
+    [visibleIndex]="dataGrid.email.visibleIndex">
+  </dxi-column>
+  <dxi-column dataField="externalId" caption="External ID" [hidingPriority]="dataGrid.externalId.hidingPriority"
+    [showInColumnChooser]="dataGrid.externalId.showInColumnChooser" [sortIndex]="dataGrid.externalId.sortIndex"
+    [sortOrder]="dataGrid.externalId.sortOrder" [visible]="dataGrid.externalId.visible"
+    [visibleIndex]="dataGrid.externalId.visibleIndex">
+  </dxi-column>
+</dx-data-grid>

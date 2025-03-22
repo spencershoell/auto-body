@@ -1,0 +1,200 @@
+﻿@model List<EntityType>
+@{
+    Layout = null;
+}
+import { MsalGuardConfiguration, MsalInterceptorConfiguration, ProtectedResourceScopes } from '@@azure/msal-angular';
+import { BrowserCacheLocation, BrowserUtils, IPublicClientApplication, InteractionType, LogLevel, PublicClientApplication } from '@@azure/msal-browser';
+import { environment } from '../environments/environment';
+import { withDisabledInitialNavigation, withEnabledBlockingInitialNavigation } from '@@angular/router';
+import { EntityEndpoint, EntityType } from './classes';
+
+const isIE = window.navigator.userAgent.indexOf('MSIE ') > -1 || window.navigator.userAgent.indexOf('Trident/') > -1;
+
+export function loggerCallback(logLevel: LogLevel, message: string) {
+    switch (logLevel) {
+        case LogLevel.Error:
+            console.error(message);
+            break;
+        case LogLevel.Warning:
+            console.warn(message);
+            break;
+        case LogLevel.Info:
+            console.info(message);
+            break;
+        case LogLevel.Verbose:
+            console.debug(message);
+            break;
+        case LogLevel.Trace:
+            console.debug(message);
+            break;
+        default:
+            console.debug(message);
+            break;
+
+    }
+    console.info(message);
+}
+
+export function MSALInstanceFactory(): IPublicClientApplication {
+    return new PublicClientApplication({
+        auth: {
+            clientId: environment.settings.auth.clientId,
+            authority: environment.settings.auth.authority,
+            redirectUri: environment.settings.auth.redirectUri,
+            postLogoutRedirectUri: environment.settings.auth.postLogoutRedirectUri
+        },
+        cache: {
+            cacheLocation: BrowserCacheLocation.LocalStorage,
+            storeAuthStateInCookie: isIE
+        },
+        system: {
+            loggerOptions: {
+                loggerCallback,
+                logLevel: environment.settings.system.loggerOptions.logLevel,
+                piiLoggingEnabled: false
+            }
+        }
+    });
+}
+
+export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
+    const protectedResourceMap = new Map<string, Array<string | ProtectedResourceScopes> | null>();
+    protectedResourceMap.set(protectedResources.graphMe.endpoint, [...protectedResources.graphMe.scopes]);
+    setProtectedResources(protectedResourceMap);
+
+    return {
+        interactionType: InteractionType.Redirect,
+        protectedResourceMap
+    };
+}
+
+export function MSALGuardConfigFactory(): MsalGuardConfiguration {
+    return {
+        interactionType: InteractionType.Redirect,
+        authRequest: {
+            scopes: ['user.read']
+        },
+        loginFailedRoute: '/login-failed'
+    };
+}
+
+export const initialNavigation = !BrowserUtils.isInIframe() && !BrowserUtils.isInPopup()
+    ? withEnabledBlockingInitialNavigation() // Set to enabledBlocking to use Angular Universal
+    : withDisabledInitialNavigation();
+
+export const loginRequest = {
+    scopes: ['openid', 'profile']
+}
+
+export const protectedResources = {
+    graphMe: {
+        endpoint: environment.settings.resources.graphMe.endpoint,
+        scopes: ['user.read']
+    },
+    api: {
+        endpoint: environment.settings.resources.api.endpoint
+    }
+}
+
+export class CrudScope {
+    read!: string[];
+    modify!: string[];
+    archive!: string[];
+    recycle!: string[];
+}
+
+export enum CrudScopeType {
+    Read = 'read',
+    Modify = 'modify',
+    Archive = 'archive',
+    Recycle = 'recycle'
+}
+
+function setProtectedResources(protectedResourceMap: Map<string, Array<string | ProtectedResourceScopes> | null>) {
+    let endpoint = environment.settings.resources.api.endpoint;
+    let scopePrefix = environment.settings.resources.api.scopePrefix;
+
+    // Me
+    protectedResourceMap.set(`${endpoint}Me/Roles()`, [
+        { httpMethod: 'GET', scopes: [`${scopePrefix}/${EntityType.Role}.Read`] }
+    ]);
+
+    protectedResourceMap.set(`${endpoint}Me/Info()`, [
+        { httpMethod: 'GET', scopes: [`${scopePrefix}/${EntityType.User}.Read`] }
+    ]);
+
+    // Group
+    protectedResourceMap.set(`${endpoint}${EntityEndpoint.Group}/Recycle`, [
+        { httpMethod: 'GET', scopes: [`${scopePrefix}/${EntityType.Group}.Recycle`] }
+    ]);
+
+    protectedResourceMap.set(`${endpoint}${EntityEndpoint.Group}/(*)/Archive`, [{ httpMethod: 'POST', scopes: [`${scopePrefix}/${EntityType.Group}.Archive`] }]);
+    protectedResourceMap.set(`${endpoint}${EntityEndpoint.Group}/(*)/Restore`, [{ httpMethod: 'POST', scopes: [`${scopePrefix}/${EntityType.Group}.Archive`] }]);
+    protectedResourceMap.set(`${endpoint}${EntityEndpoint.Group}/(*)/Recover`, [{ httpMethod: 'POST', scopes: [`${scopePrefix}/${EntityType.Group}.Recycle`] }]);
+    protectedResourceMap.set(`${endpoint}${EntityEndpoint.Group}/(*)/Purge`, [{ httpMethod: 'POST', scopes: [`${scopePrefix}/${EntityType.Group}.Recycle`] }]);
+
+    protectedResourceMap.set(`${endpoint}${EntityEndpoint.Group}`, [
+        { httpMethod: 'PUT', scopes: [`${scopePrefix}/${EntityType.Group}.Modify`] },
+        { httpMethod: 'PATCH', scopes: [`${scopePrefix}/${EntityType.Group}.Modify`] },
+        { httpMethod: 'POST', scopes: [`${scopePrefix}/${EntityType.Group}.Modify`] },
+        { httpMethod: 'DELETE', scopes: [`${scopePrefix}/${EntityType.Group}.Modify`] },
+        { httpMethod: 'GET', scopes: [`${scopePrefix}/${EntityType.Group}.Read`] }
+    ]);
+
+    // Role
+    protectedResourceMap.set(`${endpoint}${EntityEndpoint.Role}`, [`${scopePrefix}/${EntityType.Role}.Read`]);
+
+    // User
+    protectedResourceMap.set(`${endpoint}${EntityEndpoint.User}/Recycle`, [
+        { httpMethod: 'GET', scopes: [`${scopePrefix}/${EntityType.User}.Recycle`] }
+    ]);
+
+    protectedResourceMap.set(`${endpoint}${EntityEndpoint.User}/(*)/Archive`, [{ httpMethod: 'POST', scopes: [`${scopePrefix}/${EntityType.User}.Archive`] }]);
+    protectedResourceMap.set(`${endpoint}${EntityEndpoint.User}/(*)/Restore`, [{ httpMethod: 'POST', scopes: [`${scopePrefix}/${EntityType.User}.Archive`] }]);
+    protectedResourceMap.set(`${endpoint}${EntityEndpoint.User}/(*)/Recover`, [{ httpMethod: 'POST', scopes: [`${scopePrefix}/${EntityType.User}.Recycle`] }]);
+    protectedResourceMap.set(`${endpoint}${EntityEndpoint.User}/(*)/Purge`, [{ httpMethod: 'POST', scopes: [`${scopePrefix}/${EntityType.User}.Recycle`] }]);
+
+    protectedResourceMap.set(`${endpoint}${EntityEndpoint.User}`, [
+        { httpMethod: 'PUT', scopes: [`${scopePrefix}/${EntityType.User}.Modify`] },
+        { httpMethod: 'PATCH', scopes: [`${scopePrefix}/${EntityType.User}.Modify`] },
+        { httpMethod: 'POST', scopes: [`${scopePrefix}/${EntityType.User}.Modify`] },
+        { httpMethod: 'DELETE', scopes: [`${scopePrefix}/${EntityType.User}.Modify`] },
+        { httpMethod: 'GET', scopes: [`${scopePrefix}/${EntityType.User}.Read`] }
+    ]);
+
+    // Role_Group
+    protectedResourceMap.set(`${endpoint}${EntityEndpoint.Role_Group}`, [
+        { httpMethod: 'POST', scopes: [`${scopePrefix}/${EntityType.Group}.Modify`] },
+        { httpMethod: 'DELETE', scopes: [`${scopePrefix}/${EntityType.Group}.Modify`] },
+        { httpMethod: 'GET', scopes: [`${scopePrefix}/${EntityType.Role}.Read`, `${scopePrefix}/${EntityType.Group}.Read`] }
+    ]);
+
+    // User_Group
+    protectedResourceMap.set(`${endpoint}${EntityEndpoint.User_Group}`, [
+        { httpMethod: 'POST', scopes: [`${scopePrefix}/${EntityType.User}.Modify`, `${scopePrefix}/${EntityType.Group}.Modify`] },
+        { httpMethod: 'DELETE', scopes: [`${scopePrefix}/${EntityType.User}.Modify`, `${scopePrefix}/${EntityType.Group}.Modify`] },
+        { httpMethod: 'GET', scopes: [`${scopePrefix}/${EntityType.User}.Read`, `${scopePrefix}/${EntityType.Group}.Read`] }
+    ]);
+@foreach(var type in Model)
+{
+<text>
+    // @(type.Name.AsPascaleCase())
+    protectedResourceMap.set(`${endpoint}${EntityEndpoint.@(type.Name.AsPascaleCase())}/Recycle`, [
+        { httpMethod: 'GET', scopes: [`${scopePrefix}/${EntityType.@(type.Name.AsPascaleCase())}.Recycle`] }
+    ]);
+
+    protectedResourceMap.set(`${endpoint}${EntityEndpoint.@(type.Name.AsPascaleCase())}/(*)/Archive`, [{ httpMethod: 'POST', scopes: [`${scopePrefix}/${EntityType.@(type.Name.AsPascaleCase())}.Archive`] }]);
+    protectedResourceMap.set(`${endpoint}${EntityEndpoint.@(type.Name.AsPascaleCase())}/(*)/Restore`, [{ httpMethod: 'POST', scopes: [`${scopePrefix}/${EntityType.@(type.Name.AsPascaleCase())}.Archive`] }]);
+    protectedResourceMap.set(`${endpoint}${EntityEndpoint.@(type.Name.AsPascaleCase())}/(*)/Recover`, [{ httpMethod: 'POST', scopes: [`${scopePrefix}/${EntityType.@(type.Name.AsPascaleCase())}.Recycle`] }]);
+    protectedResourceMap.set(`${endpoint}${EntityEndpoint.@(type.Name.AsPascaleCase())}/(*)/Purge`, [{ httpMethod: 'POST', scopes: [`${scopePrefix}/${EntityType.@(type.Name.AsPascaleCase())}.Recycle`] }]);
+
+    protectedResourceMap.set(`${endpoint}${EntityEndpoint.@(type.Name.AsPascaleCase())}`, [
+        { httpMethod: 'PUT', scopes: [`${scopePrefix}/${EntityType.@(type.Name.AsPascaleCase())}.Modify`] },
+        { httpMethod: 'PATCH', scopes: [`${scopePrefix}/${EntityType.@(type.Name.AsPascaleCase())}.Modify`] },
+        { httpMethod: 'POST', scopes: [`${scopePrefix}/${EntityType.@(type.Name.AsPascaleCase())}.Modify`] },
+        { httpMethod: 'DELETE', scopes: [`${scopePrefix}/${EntityType.@(type.Name.AsPascaleCase())}.Modify`] },
+        { httpMethod: 'GET', scopes: [`${scopePrefix}/${EntityType.@(type.Name.AsPascaleCase())}.Read`] }
+    ]);
+</text>
+}
+}

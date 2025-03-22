@@ -1,0 +1,155 @@
+﻿@model GeneratorConfigurationModel
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-body">
+            <h2>Code Generator Configuration</h2>
+            <hr />
+            <form asp-controller="Home" asp-action="Index" method="post">
+                <h3>Destination Info</h3>
+                <hr />
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="form-floating">
+                            <input asp-for="SolutionRoot" class="form-control" />
+                            <label asp-for="SolutionRoot"></label>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>General Project Info</h3>
+                <hr />
+                <div class="row mb-2">
+                    <div class="col-12">
+                        <div class="form-floating">
+                            <input asp-for="CompanyName" class="form-control" />
+                            <label asp-for="CompanyName"></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-12">
+                        <div class="form-floating">
+                            <input asp-for="ProjectName" class="form-control" />
+                            <label asp-for="ProjectName"></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-12">
+                        <div class="form-floating">
+                            <input asp-for="ApiAppId" class="form-control" />
+                            <label asp-for="ApiAppId"></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-12">
+                        <div class="form-floating">
+                            <input asp-for="ApiAppObjectId" class="form-control" />
+                            <label asp-for="ApiAppObjectId"></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="form-floating">
+                            <input asp-for="ApiAppPublicDomain" class="form-control" />
+                            <label asp-for="ApiAppPublicDomain"></label>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Web Customizations</h3>
+                <hr />
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="form-floating">
+                            <input asp-for="AppPrefix" class="form-control" />
+                            <label asp-for="AppPrefix"></label>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Page Generation</h3>
+                <hr />
+                <h4>API Files</h4>
+                <div class="row mb-2">
+                    <div class="col-12">
+                        <input type="checkbox" asp-for="WriteBackendModels" />
+                        <label asp-for="WriteBackendModels"></label>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-12">
+                        <input type="checkbox" asp-for="WriteBackendContext" />
+                        <label asp-for="WriteBackendContext"></label>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-12">
+                        <input type="checkbox" asp-for="WriteBackendRoles" />
+                        <label asp-for="WriteBackendRoles"></label>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-12">
+                        <input type="checkbox" asp-for="WriteBackendRepositories" />
+                        <label asp-for="WriteBackendRepositories"></label>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-12">
+                        <input type="checkbox" asp-for="WriteBackendControllers" />
+                        <label asp-for="WriteBackendControllers"></label>
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <input type="checkbox" asp-for="WriteBackendTests" />
+                        <label asp-for="WriteBackendTests"></label>
+                    </div>
+                </div>
+
+                <h4>Web Project Files</h4>
+                <div class="row mb-2">
+                    <div class="col-12">
+                        <input type="checkbox" asp-for="WriteAngularModels" />
+                        <label asp-for="WriteAngularModels"></label>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-12">
+                        <input type="checkbox" asp-for="WriteAngularServices" />
+                        <label asp-for="WriteAngularServices"></label>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-12">
+                        <input type="checkbox" asp-for="WriteAngularStores" />
+                        <label asp-for="WriteAngularStores"></label>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-12">
+                        <input type="checkbox" asp-for="WriteAngularComponents" />
+                        <label asp-for="WriteAngularComponents"></label>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-12">
+                        <input type="checkbox" asp-for="WriteAngularPages" />
+                        <label asp-for="WriteAngularPages"></label>
+                    </div>
+                </div>
+                
+                <div class="d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-primary">Generate Code Files</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

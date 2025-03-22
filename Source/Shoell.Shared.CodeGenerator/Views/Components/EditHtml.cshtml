@@ -1,0 +1,154 @@
+﻿@model EntityType;
+@{
+    Layout = null;
+}
+<ng-container *ngIf="!isLoading && model">
+    <div class="edit-header">
+        <dx-toolbar>
+            <!-- Edit Buttons -->
+            <!-- -- Edit -->
+            <dxi-item location="before" [visible]="!isEditing && !isDeleting && !isSaving && canUpdate">
+                <dx-button text="Edit" [icon]="fasPen" stylingMode="outlined" type="default"
+                (onClick)="toggleEdit()"></dx-button>
+            </dxi-item>
+            <!-- -- Save -->
+            <dxi-item location="before" [visible]="isEditing && !isDeleting && !isSaving && canUpdate">
+                <dx-button text="Save" [icon]="fasFloppyDisk" stylingMode="outlined" type="default"
+                [disabled]="pristine" (onClick)="save()"></dx-button>
+            </dxi-item>
+            <!-- -- Saving -->
+            <dxi-item location="before" [visible]="isSaving && !isDeleting && canUpdate">
+                <dx-load-indicator></dx-load-indicator>
+            </dxi-item>
+            <!-- -- Cancel -->
+            <dxi-item location="before" locateInMenu="before"
+            [visible]="isEditing && !isDeleting && !isSaving && canUpdate">
+                <dx-button text="Cancel" (onClick)="toggleEdit()" stylingMode="text"></dx-button>
+            </dxi-item>@if (Model.BaseType == "BaseModel")
+            {
+                <!-- Archive Buttons -->
+                <dxi-item location="after" locateInMenu="before"
+                [visible]="!isArchiving && !isDeleting && !isSaving && !model.isArchived && canArchive">
+                    <dx-button text="Archive" [icon]="farBoxArchive" (onClick)="archive()"
+                    stylingMode="outlined"></dx-button>
+                </dxi-item>
+                <dxi-item location="after" locateInMenu="before"
+                [visible]="!isArchiving && !isDeleting && !isSaving && model.isArchived && canArchive">
+                    <dx-button text="Restore" [icon]="fasBoxArchive" (onClick)="restore()"
+                    stylingMode="outlined"></dx-button>
+                </dxi-item>
+                <dxi-item location="after" [visible]="isArchiving && !isDeleting && !isSaving && canArchive">
+                    <dx-load-indicator></dx-load-indicator>
+            </dxi-item>
+            <!-- Delete Buttons -->}
+            <!-- -- Cancel -->
+            <dxi-item location="after" locateInMenu="before"
+                [visible]="isConfirmingDelete && !isDeleting && !isSaving && canDelete">
+                <dx-button text="Cancel" (onClick)="toggleConfirmDelete()" stylingMode="text"></dx-button>
+            </dxi-item>
+            <!-- -- Delete -->
+            <dxi-item location="after" [visible]="!isConfirmingDelete && !isDeleting && !isSaving && canDelete">
+                <dx-button text="Delete" [icon]="fasTrash" stylingMode="outlined" type="danger" [disabled]="!pristine"
+                    (onClick)="toggleConfirmDelete()"></dx-button>
+            </dxi-item>
+            <!-- -- Confirm Delete -->
+            <dxi-item location="after" [visible]="isConfirmingDelete && !isDeleting && !isSaving && canDelete">
+                <dx-button text=" Confirm" [icon]="fasFloppyDisk" stylingMode="contained" type="danger"
+                    (onClick)="delete()"></dx-button>
+            </dxi-item>
+            <!-- -- Deleting -->
+            <dxi-item location="after" [visible]="isDeleting && !isSaving && canDelete">
+                <dx-load-indicator></dx-load-indicator>
+            </dxi-item>
+        </dx-toolbar>
+    </div>
+    <div class="edit-body">
+        <div class="card">
+            <dx-scroll-view>
+                <dx-form [colCount]="1">
+                    <dxi-item>
+                        <dx-validation-summary [validationGroup]="validationGroup"></dx-validation-summary>
+                    </dxi-item>
+@if (Model.BaseType == "BaseModel") {
+                    <dxi-item>
+                        <div *dxTemplate>
+                            <form-text-box label="Name" [(value)]="model.name!" [isEditing]="isEditing"
+                                [validators]="[{ type: 'required', message: 'Name is a required field' }]" [validationGroup]="validationGroup" (valueChange)="fieldDataChanged()"></form-text-box>
+                        </div>
+                    </dxi-item>
+                    <dxi-item>
+                        <div *dxTemplate>
+                            <form-text-area label="Description" [(value)]="model.description!" [isEditing]="isEditing"
+                                [validationGroup]="validationGroup" (valueChange)="fieldDataChanged()"></form-text-area>
+                        </div>
+                    </dxi-item>
+}
+@foreach (var property in Model.Properties)
+{
+    switch (property.Type.GetJavascriptType())
+    {
+        case "string":
+                    <dxi-item>
+                        <div *dxTemplate>
+                            <form-text-box label="@(property.DisplayName)" [(value)]="model.@(property.Name.AsCamelCase())!" [isEditing]="isEditing"
+                                @{
+                                    if (property.Required) { <text>[validators]="[{ type: 'required', message: '@(property.DisplayName) is a required field' }]" </text> } 
+                                }[validationGroup]="validationGroup"@if(property.Required){<text> [validators]="[{type: 'required', message: '@(property.DisplayName) is required'}]"</text>} (valueChange)="fieldDataChanged()"></form-text-box>
+                        </div>
+                    </dxi-item>
+            break;
+        case "number":
+                    <dxi-item>
+                        <div *dxTemplate>
+                            <form-number-box label="@(property.DisplayName)" [(value)]="model.@(property.Name.AsCamelCase())!" [isEditing]="isEditing"
+                                @{
+                                    if (property.Required) { <text>[validators]="[{ type: 'required', message: '@(property.DisplayName) is a required field' }]" </text> } 
+                                }[validationGroup]="validationGroup"@if(property.Required){<text> [validators]="[{type: 'required', message: '@(property.DisplayName) is required'}]"</text>} (valueChange)="fieldDataChanged()"></form-number-box>
+                        </div>
+                    </dxi-item>
+            break;
+        case "Date | string | number":
+                    <dxi-item>
+                        <div *dxTemplate>
+                            <form-date-box label="@(property.DisplayName)" [(value)]="model.@(property.Name.AsCamelCase())!" [isEditing]="isEditing"
+                                @{
+                                    if (property.Required) { <text>[validators]="[{ type: 'required', message: '@(property.DisplayName) is a required field' }]" </text> } 
+                                }[validationGroup]="validationGroup"@if(property.Required){<text> [validators]="[{type: 'required', message: '@(property.DisplayName) is required'}]"</text>} (valueChange)="fieldDataChanged()"></form-date-box>
+                        </div>
+                    </dxi-item>
+            break;
+        case "boolean | null":
+                    <dxi-item>
+                        <div *dxTemplate>
+                            <form-check-box label="@(property.DisplayName)" [labelToRight]="true" [(value)]="model.@(property.Name.AsCamelCase())!"
+                                @{
+                                    if (property.Required) { <text>[validators]="[{ type: 'required', message: '@(property.DisplayName) is a required field' }]" </text> } 
+                                }[isEditing]="isEditing" [validationGroup]="validationGroup"@if(property.Required){<text> [validators]="[{type: 'required', message: '@(property.DisplayName) is required'}]"</text>} (valueChange)="fieldDataChanged()"></form-check-box>
+                        </div>
+                    </dxi-item>
+            break;
+        default:
+            break;
+    }
+}@foreach (var navProperty in Model.NavigationProperties.Where(e => !e.IsCollection && e.ForeignKey.AsCamelCase() != "id"))
+{
+ <text>
+                    <dxi-item [visible]="show@(navProperty.Name.AsPascaleCase())">
+                        <div *dxTemplate>
+                            <@(Model.Config.AppPrefix)-@(navProperty.Type.AsDashedLowerCase())-select [(value)]="model.@(navProperty.ForeignKey.AsCamelCase())"
+                                label="@(navProperty.DisplayName)" [isEditing]="isEditing" [validationGroup]="validationGroup" (valueChange)="fieldDataChanged()"@if(navProperty.Required){<text> [validators]="[{type: 'required', message: '@(navProperty.DisplayName) is required'}]"</text>}>@Html.Raw($"</{Model.Config.AppPrefix}-{navProperty.Type.AsDashedLowerCase()}-select>")
+                        </div>
+                    </dxi-item>
+</text>
+}
+                    <dxi-item>
+                        <dx-validation-summary [validationGroup]="validationGroup"></dx-validation-summary>
+                    </dxi-item>
+                </dx-form>
+            </dx-scroll-view>
+        </div>
+    </div>
+</ng-container>
+<div *ngIf="isLoading || !model" class="edit-load-indicator-wrapper">
+    <dx-load-indicator class="edit-load-indicator" [height]="50" [width]="50"></dx-load-indicator>
+</div>

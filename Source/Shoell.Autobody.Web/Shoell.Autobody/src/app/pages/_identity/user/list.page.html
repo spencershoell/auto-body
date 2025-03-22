@@ -1,0 +1,11 @@
+<div class="list-page view-wrapper">
+    <div class="header-wrapper">
+        <div class="breadcrumbs">
+            <div class="breadcrumb-item"><a [routerLink]="['/']">Home</a></div>
+            <div class="breadcrumb-item active"><a [routerLink]="['/user']">Users</a></div>
+        </div>
+    </div>
+    <div class="body-wrapper">
+        <sh-user-list [outsideSlidePanel]="true"></sh-user-list>
+    </div>
+</div>

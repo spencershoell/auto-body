@@ -1,0 +1,186 @@
+﻿@model EntityType;
+@{
+    Layout = null;
+    var companyName = Model.Config.CompanyName.AsPascaleCase();
+    var projectName = Model.Config.ProjectName.AsPascaleCase();
+    var ns = (Model.Namespace == string.Empty) ? string.Empty : $".{Model.Namespace.AsPascaleCase()}";
+    var name = Model.Name.AsPascaleCase();
+    var baseType = (Model.BaseType != string.Empty) ? $" : {Model.BaseType}" : string.Empty;
+    var displayNew = (Model.BaseType != string.Empty) ? " new" : string.Empty;
+    var usingDi = Model.Keys.Count > 1;
+}
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.OData.Deltas;
+using Microsoft.EntityFrameworkCore;
+@if (usingDi) 
+{
+<text>using Microsoft.Extensions.DependencyInjection;
+using System.Linq.Expressions;
+</text> 
+}
+using @(companyName).Shared.Exceptions;
+using @(companyName).Shared.Extensions;
+using @(companyName).Shared.Types;
+using @(companyName).Shared.Interfaces;
+@if (!string.IsNullOrEmpty(ns)) 
+{ 
+<text>using @(companyName).Shared.Interfaces@(ns);
+</text> 
+}
+using @(companyName).@(projectName).Identity;
+@if (!string.IsNullOrEmpty(ns)) 
+{ 
+<text>using @(companyName).@(projectName).Identity@(ns);
+</text> 
+}
+using @(companyName).@(projectName).Models;
+using @(companyName).@(projectName).Models.System;
+@if (!string.IsNullOrEmpty(ns) && ns != ".System" && ns != ".Identity")
+{
+<text>using @(companyName).@(projectName).Models@(ns);
+</text> 
+}
+
+namespace @(companyName).@(projectName).Data@(ns)
+{
+    public class @(name)Repository(
+        IAuthorizationService authorizationService,
+        I@(name)Context<@(name), Log> context,
+        IDateTimeProvider dateTimeProvider, 
+        IHttpContextAccessor httpContextAccessor,
+        IServiceProvider serviceProvider
+    )@if (!string.IsNullOrEmpty(baseType)) 
+{ 
+<text> : BaseRepository<@(name)></text> 
+} @if (string.IsNullOrEmpty(baseType) && Model.Keys.Count == 2) 
+{
+<text> : BaseJoinRepository<@(name)></text> 
+} @if (string.IsNullOrEmpty(baseType) && Model.Keys.Count != 2) 
+{ 
+<text> : CoreRepository<@(name)></text> 
+}
+    {
+        protected override EntityType EntityType => @(Model.Name).EntityType;
+
+@if (string.IsNullOrEmpty(baseType) && Model.Keys.Count == 2) 
+{
+<text>        protected override EntityType EntityType1 => @(Model.Keys[0].Type.AsPascaleCase()).EntityType;
+        protected override EntityType EntityType2 => @(Model.Keys[1].Type.AsPascaleCase()).EntityType;
+</text>
+}
+        protected override IAuthorizationService AuthorizationService => authorizationService;
+        protected override I@(name)Context<@(name), Log> Context => context;
+        protected override IDateTimeProvider DateTimeProvider => dateTimeProvider;
+        protected override IHttpContextAccessor HttpContextAccessor => httpContextAccessor;
+        protected IServiceProvider ServiceProvider => serviceProvider;
+        protected override DbSet<@(name)> EntitySet => Context.@(name.AsPlural());
+@if (!string.IsNullOrEmpty(baseType)) 
+{
+<text>
+        protected override string CreatePolicy => @(name)Roles.Create;
+        protected override string ReadPolicy => @(name)Roles.Read;
+        protected override string UpdatePolicy => @(name)Roles.Update;
+        protected override string DeletePolicy => @(name)Roles.Delete;
+
+        protected override string RecyclePolicy => @(name)Roles.Recycle;
+        protected override string RecoverPolicy => @(name)Roles.Recover;
+        protected override string PurgePolicy => @(name)Roles.Purge;
+
+        protected override string ArchivePolicy => @(name)Roles.Archive;
+        protected override string RestorePolicy => @(name)Roles.Restore;
+
+        protected override Task<bool> ArchiveChildrenAsync(@(name) model, CancellationToken cancellationToken = default)
+	    {
+		    return Task.FromResult(true);
+	    }
+
+	    protected override Task<bool> PurgeChildrenAsync(@(name) model, CancellationToken cancellationToken = default)
+	    {
+		    return Task.FromResult(true);
+	    }
+
+	    protected override Task<bool> RestoreChildrenAsync(@(name) model, CancellationToken cancellationToken = default)
+	    {
+		    return Task.FromResult(true);
+	    }
+
+	    protected override Task<bool> RemoveChildrenAsync(@(name) model, CancellationToken cancellationToken = default)
+	    {
+		    return Task.FromResult(true);
+	    }
+
+	    protected override Task<bool> RecoverChildrenAsync(@(name) model, CancellationToken cancellationToken = default)
+	    {
+		    return Task.FromResult(true);
+	    }
+
+        protected override void FilterUpdateProperties(Delta<@(name)> delta, @(name) model)
+        {
+        }
+</text>
+}
+@if (string.IsNullOrEmpty(baseType) && Model.Keys.Count == 2) 
+{
+<text>
+        protected virtual Lazy<@(Model.Keys[0].Type.AsPascaleCase())Repository> @(Model.Keys[0].Type.AsPascaleCase())Repository => new(ServiceProvider.GetRequiredService<@(Model.Keys[0].Type.AsPascaleCase())Repository>());
+		@if(Model.Keys[0].Type.ToLower() != Model.Keys[1].Type.ToLower()) { <text>protected virtual Lazy<@(Model.Keys[1].Type.AsPascaleCase())Repository> @(Model.Keys[1].Type.AsPascaleCase())Repository => new(ServiceProvider.GetRequiredService<@(Model.Keys[1].Type.AsPascaleCase())Repository>());</text> }
+
+        protected override string ModifyPolicy => @(name)Roles.Modify;
+        protected override string ReadPolicy => @(name)Roles.Read;
+
+        protected override Expression<@Html.Raw($"Func<{name}, bool>")> IdentifierPredicate(Guid @(Model.Keys[0].Name.AsCamelCase()), Guid @(Model.Keys[1].Name.AsCamelCase()))
+		{
+            return e => e.@(Model.Keys[0].Name.AsPascaleCase()) == @(Model.Keys[0].Name.AsCamelCase()) && e.@(Model.Keys[1].Name.AsPascaleCase()) == @(Model.Keys[1].Name.AsCamelCase());
+		}
+
+		public override async Task<bool> ExistsAsync(@(name) model, CancellationToken cancellationToken = default)
+		{
+			return await ExistsAsync(model.@(Model.Keys[0].Type.AsPascaleCase())Id, model.@(Model.Keys[1].Type.AsPascaleCase())Id, cancellationToken);
+		}		
+
+        public async Task Add@(Model.Keys[0].Name.AsPascaleCase().Replace("Id", string.Empty))To@(Model.Keys[1].Name.AsPascaleCase().Replace("Id", string.Empty).AsPlural())(Guid @(Model.Keys[0].Name.AsCamelCase()), List<Guid> @(Model.Keys[1].Name.AsCamelCase().AsPlural()), CancellationToken cancellationToken = default)
+        {
+            await ResolveAuthorizationAsync(ModifyPolicy, cancellationToken);
+
+            if (!await @(Model.Keys[0].Type.AsPascaleCase())Repository.Value.ExistsAsync(@(Model.Keys[0].Name.AsCamelCase()), cancellationToken))
+                throw new NotFoundException($"@(Model.Keys[0].Name.Replace("Id", string.Empty).AsPascaleCase()) not found");
+
+            foreach (var @(Model.Keys[1].Name.AsCamelCase()) in @(Model.Keys[1].Name.AsCamelCase().AsPlural()))
+            {
+                if (!await ExistsAsync(@(Model.Keys[0].Name.AsCamelCase()), @(Model.Keys[1].Name.AsCamelCase()), cancellationToken))
+                {
+                    await EntitySet.AddAsync(new @(name) { @(Model.Keys[0].Name.AsPascaleCase()) = @(Model.Keys[0].Name.AsCamelCase()), @(Model.Keys[1].Name.AsPascaleCase()) = @(Model.Keys[1].Name.AsCamelCase()) }, cancellationToken);
+                    await Context.Logs.AddAsync(new Log { Type = @(Model.Keys[0].Type.AsPascaleCase()).EntityType.Type, Action = LogAction.Link, Description = $"Added @(Model.Keys[1].Type.AsPascaleCase()): {@(Model.Keys[1].Name.AsCamelCase())}", IpAddress = $"{HttpContextAccessor.HttpContext?.Connection.RemoteIpAddress}", UserAgent = $"{HttpContextAccessor.HttpContext?.Request.Headers.UserAgent}", UserId = User.@(projectName)Id(), EntityId = @(Model.Keys[0].Name.AsCamelCase()), DateCreated = DateTimeProvider.UtcNow }, cancellationToken);
+                    await Context.Logs.AddAsync(new Log { Type = @(Model.Keys[1].Type.AsPascaleCase()).EntityType.Type, Action = LogAction.Link, Description = $"Added @(Model.Keys[0].Type.AsPascaleCase()): {@(Model.Keys[0].Name.AsCamelCase())}", IpAddress = $"{HttpContextAccessor.HttpContext?.Connection.RemoteIpAddress}", UserAgent = $"{HttpContextAccessor.HttpContext?.Request.Headers.UserAgent}", UserId = User.@(projectName)Id(), EntityId = @(Model.Keys[1].Name.AsCamelCase()), DateCreated = DateTimeProvider.UtcNow }, cancellationToken);
+                }
+            }
+        }
+
+        public async Task Add@(Model.Keys[1].Name.AsPascaleCase().Replace("Id", string.Empty))To@(Model.Keys[0].Name.AsPascaleCase().Replace("Id", string.Empty).AsPlural())(Guid @(Model.Keys[1].Name.AsCamelCase()), List<Guid> @(Model.Keys[0].Type.AsCamelCase())Ids, CancellationToken cancellationToken = default)
+        {
+            await ResolveAuthorizationAsync(ModifyPolicy, cancellationToken);
+
+            if (!await @(Model.Keys[1].Type.AsPascaleCase())Repository.Value.ExistsAsync(@(Model.Keys[1].Name.AsCamelCase()), cancellationToken))
+                throw new NotFoundException($"@(Model.Keys[1].Name.Replace("Id", string.Empty).AsPascaleCase()) not found");
+
+            foreach (var @(Model.Keys[0].Name.AsCamelCase()) in @(Model.Keys[0].Name.AsCamelCase().AsPlural()))
+            {
+                if (!await ExistsAsync(@(Model.Keys[0].Name.AsCamelCase()), @(Model.Keys[1].Name.AsCamelCase()), cancellationToken))
+                {
+                    await EntitySet.AddAsync(new @(name) { @(Model.Keys[0].Name.AsPascaleCase()) = @(Model.Keys[0].Name.AsCamelCase()), @(Model.Keys[1].Name.AsPascaleCase()) = @(Model.Keys[1].Name.AsCamelCase()) }, cancellationToken);
+                    await Context.Logs.AddAsync(new Log { Type = @(Model.Keys[0].Type.AsPascaleCase()).EntityType.Type, Action = LogAction.Link, Description = $"Added @(Model.Keys[1].Type.AsPascaleCase()): {@(Model.Keys[1].Name.AsCamelCase())}", IpAddress = $"{HttpContextAccessor.HttpContext?.Connection.RemoteIpAddress}", UserAgent = $"{HttpContextAccessor.HttpContext?.Request.Headers.UserAgent}", UserId = User.@(projectName)Id(), EntityId = @(Model.Keys[0].Name.AsCamelCase()), DateCreated = DateTimeProvider.UtcNow }, cancellationToken);
+                    await Context.Logs.AddAsync(new Log { Type = @(Model.Keys[1].Type.AsPascaleCase()).EntityType.Type, Action = LogAction.Link, Description = $"Added @(Model.Keys[0].Type.AsPascaleCase()): {@(Model.Keys[0].Name.AsCamelCase())}", IpAddress = $"{HttpContextAccessor.HttpContext?.Connection.RemoteIpAddress}", UserAgent = $"{HttpContextAccessor.HttpContext?.Request.Headers.UserAgent}", UserId = User.@(projectName)Id(), EntityId = @(Model.Keys[1].Name.AsCamelCase()), DateCreated = DateTimeProvider.UtcNow }, cancellationToken);
+                }
+            }
+        }
+</text>
+}
+@if (string.IsNullOrEmpty(baseType) && Model.Keys.Count != 2) 
+{
+<text>
+        protected override string ReadPolicy => @(name)Roles.Read;
+</text>
+}
+    }
+}

@@ -1,0 +1,20 @@
+@use "variables.scss" as *;
+
+:host {
+  flex-direction: column;
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.layout-header {
+  z-index: 1505;
+}
+
+::ng-deep .dx-theme-fluent {
+  .dx-drawer-wrapper {
+    .dx-drawer-panel-content {
+      @include depth-8();
+    }
+  }
+}

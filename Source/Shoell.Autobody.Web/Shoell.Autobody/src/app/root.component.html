@@ -1,0 +1,14 @@
+﻿<ng-container *ngIf="loggedIn; else notLoggedIn">
+    <ng-container *ngIf="authorized; else notAuthorized">
+        <sh-side-nav-outer-toolbar title="{{appInfo.title}}">
+            <router-outlet></router-outlet>
+        </sh-side-nav-outer-toolbar>
+        <sh-slide-panel></sh-slide-panel>
+    </ng-container>
+</ng-container>
+<ng-template #notLoggedIn>
+    <sh-not-authenticated></sh-not-authenticated>
+</ng-template>
+<ng-template #notAuthorized>
+    <sh-not-authorized></sh-not-authorized>
+</ng-template>

@@ -1,0 +1,88 @@
+﻿@model EntityType;
+@{
+    Layout = null;
+}
+<dx-data-grid class="grid" noDataText="" height="100%" [allowColumnReordering]="true" [allowColumnResizing]="true"
+  [columnAutoWidth]="true" [columnHidingEnabled]="true" [dataSource]="dataSource" [focusedRowEnabled]="true"
+  [remoteOperations]="true" [rowAlternationEnabled]="true" [showBorders]="true" [showColumnLines]="false"
+  [showRowLines]="true" [wordWrapEnabled]="true" [disabled]="disabled" (onExporting)="onExporting($event)"
+  (onRowClick)="onRowClick($event)">
+  <dxo-column-chooser [enabled]="true" mode="select"></dxo-column-chooser>
+  <dxo-editing mode="row" refreshMode="full" [allowAdding]="false" [allowUpdating]="false" [allowDeleting]="false">
+  </dxo-editing>
+  <dxo-filter-panel [visible]="false"></dxo-filter-panel>
+  <dxo-filter-row [visible]="false"></dxo-filter-row>
+  <dxo-group-panel [visible]="false"></dxo-group-panel>
+  <dxo-grouping #expand [autoExpandAll]="true" [contextMenuEnabled]="false"></dxo-grouping>
+  <dxo-header-filter [visible]="false"></dxo-header-filter>
+  <dxo-keyboard-navigation enterKeyAction="startEdit" enterKeyDirection="row" [editOnKeyPress]="true">
+  </dxo-keyboard-navigation>
+  <dxo-load-panel [showPane]="true"></dxo-load-panel>
+  <dxo-paging [enabled]="true" [pageSize]="100"></dxo-paging>
+  <dxo-scrolling mode="virtual" rowRenderingMode="virtual" [preloadEnabled]="true"></dxo-scrolling>
+  <dxo-sorting mode="multiple"></dxo-sorting>
+  <dxo-search-panel [visible]="true" placeholder="{{entityName}} Search"
+    [searchVisibleColumnsOnly]="false"></dxo-search-panel>
+  <dxo-selection selectAllMode="allPages" showCheckBoxesMode="always" mode="multiple"></dxo-selection>
+  <dxo-toolbar>
+    <dxi-item [hidden]="!showTitle" location="before" locateInMenu="auto">
+      <div class="grid-header">{{title}}</div>
+    </dxi-item>
+    <dxi-item location="before">
+      <dx-drop-down-button stylingMode="text" [useSelectMode]="true" [items]="filterStatusList"
+        [dropDownOptions]="{ width: '112px' }" [selectedItemKey]="filterStatusList[1]"
+        (onSelectionChanged)="filterByStatus($event)"></dx-drop-down-button>
+    </dxi-item>
+    <dxi-item location="before" name="groupPanel" locateInMenu="auto"></dxi-item>
+    <dxi-item [hidden]="!canCreate" location="after" locateInMenu="auto">
+      <dx-button stylingMode="contained" type="default" [icon]="fasPlus" text="Add {{entityName}}"
+        (onClick)="create()">
+      </dx-button>
+    </dxi-item>
+    <dxi-item location="after" locateInMenu="auto" showText="inMenu" widget="dxButton"
+      [options]="{ text: 'Refresh', icon: 'refresh', onClick: refresh }"></dxi-item>
+    <dxi-item name="addRowButton"></dxi-item>
+    <dxi-item name="saveButton"></dxi-item>
+    <dxi-item name="revertButton"></dxi-item>
+    <dxi-item location="after" locateInMenu="auto">
+      <div class="separator"></div>
+    </dxi-item>
+    <dxi-item name="exportButton"></dxi-item>
+    <dxi-item location="after" locateInMenu="auto">
+      <div class="separator"></div>
+    </dxi-item>
+    <dxi-item name="columnChooserButton" locateInMenu="auto"></dxi-item>
+    <dxi-item name="searchPanel" locateInMenu="auto"></dxi-item>
+  </dxo-toolbar>
+  @if (Model.BaseType == "BaseModel")
+  {
+  <dxi-column dataField="name" cellTemplate="nameTemplate" [hidingPriority]="dataGrid.name.hidingPriority"
+    [showInColumnChooser]="dataGrid.name.showInColumnChooser" [sortIndex]="dataGrid.name.sortIndex"
+    [sortOrder]="dataGrid.name.sortOrder" [visible]="dataGrid.name.visible" [visibleIndex]="dataGrid.name.visibleIndex">
+    <div *dxTemplate="let item of 'nameTemplate'">
+      <a *ngIf="item.data.id" [routerLink]="['/@(Model.Name.AsCamelCase())', item.data.id?._value]">{{item.value}}</a>
+    </div>
+  </dxi-column>
+  <dxi-column dataField="description" [hidingPriority]="dataGrid.description.hidingPriority"
+    [showInColumnChooser]="dataGrid.description.showInColumnChooser" [sortIndex]="dataGrid.description.sortIndex"
+    [sortOrder]="dataGrid.description.sortOrder" [visible]="dataGrid.description.visible"
+    [visibleIndex]="dataGrid.description.visibleIndex">
+  </dxi-column>
+  }
+  @foreach (var property in Model.Properties)
+  {
+  <dxi-column dataField="@(property.Name?.AsCamelCase())" caption="@(property.Name?.AsSpacedPascaleCase())" [hidingPriority]="dataGrid.@(property.Name?.AsCamelCase()).hidingPriority"
+    [showInColumnChooser]="dataGrid.@(property.Name?.AsCamelCase()).showInColumnChooser" [sortIndex]="dataGrid.@(property.Name?.AsCamelCase()).sortIndex"
+    [sortOrder]="dataGrid.@(property.Name?.AsCamelCase()).sortOrder" [visible]="dataGrid.@(property.Name?.AsCamelCase()).visible"
+    [visibleIndex]="dataGrid.@(property.Name?.AsCamelCase()).visibleIndex">
+  </dxi-column>
+  }
+  @foreach (var navProperty in Model.NavigationProperties.Where(e => !e.IsCollection))
+  {
+  <dxi-column dataField="@(navProperty.Name.AsCamelCase()).name" caption="@(navProperty.Name.AsSpacedPascaleCase())" [hidingPriority]="dataGrid.@(navProperty.ForeignKey.AsCamelCase()).hidingPriority"
+    [showInColumnChooser]="dataGrid.@(navProperty.ForeignKey.AsCamelCase()).showInColumnChooser" [sortIndex]="dataGrid.@(navProperty.ForeignKey.AsCamelCase()).sortIndex"
+    [sortOrder]="dataGrid.@(navProperty.ForeignKey.AsCamelCase()).sortOrder" [visible]="dataGrid.@(navProperty.ForeignKey.AsCamelCase()).visible"
+    [visibleIndex]="dataGrid.@(navProperty.ForeignKey.AsCamelCase()).visibleIndex">
+  </dxi-column>
+  }
+</dx-data-grid>

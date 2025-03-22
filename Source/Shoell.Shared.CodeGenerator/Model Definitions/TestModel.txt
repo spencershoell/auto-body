@@ -1,0 +1,138 @@
+# System
+type Tenant extends .BaseModel
+	string Address1
+	string Address2
+	string City
+	string State
+	string Zipcode
+	string Phone
+
+type Employee extends .BaseModel
+	string FirstName
+	string LastName
+	string Email
+	string Phone
+	string Title
+	Tenant Tenant => Employees
+
+# AR
+type Customer extends .BaseModel
+	string Kayla
+	string Is
+	string Hot
+	string Terms
+	string CustomerNumber
+	bool IsTaxExempt
+	Location Location => Customers
+
+type Widget extends .BaseModel
+	Customer Customer => Widgets
+
+type Contact extends .BaseModel
+	string FirstName
+	string LastName
+	string Email
+	string Phone
+	string Title
+	Customer Customer => Contacts
+
+type Location extends .BaseModel
+	string Address1
+	string Address2
+	string City
+	string State
+	string Zipcode
+	string Phone
+	bool IsTaxExempt
+
+type Contact_Location
+	+Contact Contact => Locations
+	+Location Location => Contacts
+
+type Invoice extends .BaseModel
+	DateTime DateDue
+	DateTime DatePaid
+	AR.Customer Customer => Invoices
+	AR.Contact Contact => Invoices
+	AR.Location Location => Invoices
+	CRM.Quote Quote => Invoices
+	System.Employee Invoicer => Invoices
+
+type InvoiceLineItems extends .BaseModel
+	[p:18][s:2] decimal Quantity
+	[p:18][s:2] decimal AdjustedUnitPrice
+	PeriodType PeriodType
+	[p:18][s:2] decimal TaxRate
+	bool IsTaxExempt
+	bool IsTaxOutOfState
+	Invoice Invoice => LineItems
+	CRM.QuoteLineItem QuoteLineItem => InvoiceLineItems
+
+enum PeriodType
+	Unknown = 0
+	OneTime = 1
+	Quarterly = 2
+	Monthly = 3
+	Yearly = 4
+
+# CRM
+type Opportunity extends .BaseModel
+	DateTime DateExpired
+	DateTime DateRejected
+	string Terms
+	bool IsTaxExempt
+	AR.Customer Customer => Opportunities
+	AR.Contact Contact => Opportunities
+	System.Employee SalesRep => Opportunities
+
+type Quote extends .BaseModel
+	DateTime DateExpired
+	DateTime DateRejected
+	string Terms
+	bool IsTaxExempt
+	AR.Customer Customer => Quotes
+	AR.Contact Contact => Quotes
+	System.Employee Quoter => Quotes
+	Opportunity Opportunity => Quotes
+
+type QuoteLineItem extends .BaseModel
+	[p:18][s:2] decimal Quantity
+	[p:18][s:2] decimal UnitCost
+	[p:18][s:2] decimal UnitPrice
+	[p:18][s:2] decimal AdjustedUnitPrice
+	AR.PeriodType PeriodType
+	[p:18][s:2] decimal TaxRate
+	bool IsTaxExempt
+	bool IsTaxOutOfState
+	Quote Quote => QuoteLineItems
+
+# OE
+type Order extends .BaseModel
+	DateTime DateOrdered
+	string OrderNumber
+	AR.Customer Customer => Orders
+	AR.Contact Contact => Orders
+	System.Employee Purchaser => Orders
+	AP.Vendor Vendor => Orders
+
+type OrderLineItem extends .BaseModel
+	[p:18][s:2] decimal Quantity
+	[p:18][s:2] decimal UnitCost	
+	Order Order => OrderLineItems
+	CRM.QuoteLineItem QuoteLineItem => OrderLineItems
+
+# AP
+type Vendor extends .BaseModel
+	string Terms
+
+type Bill extends .BaseModel
+	DateTime DateDue
+	DateTime DatePaid
+	AP.Vendor Vendor => Bills
+	System.Employee Approver => Bills
+
+type BillLineItem extends .BaseModel
+	[p:18][s:2] decimal Quantity
+	[p:18][s:2] decimal UnitCost
+	Bill Bill => BillLineItems
+	OE.OrderLineItem OrderLineItem => BillLineItems

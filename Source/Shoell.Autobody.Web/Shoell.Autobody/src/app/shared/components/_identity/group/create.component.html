@@ -1,0 +1,49 @@
+<ng-container *ngIf="model">
+    <div class="create-header">
+        <dx-toolbar>
+            <dxi-item location="before">
+                Create new {{entityType}}
+            </dxi-item>
+            <!-- Create Buttons -->
+            <!-- -- Save -->
+            <dxi-item location="after" [visible]="!isSaving && canCreate">
+                <div *dxTemplate>
+                    <dx-button text="Save" [icon]="fasFloppyDisk" stylingMode="contained" type="default"
+                        (onClick)="save()"></dx-button>
+                </div>
+            </dxi-item>
+            <!-- -- Saving -->
+            <dxi-item location="after" [visible]="isSaving && canCreate">
+                <div *dxTemplate>
+                    <dx-load-indicator></dx-load-indicator>
+                </div>
+            </dxi-item>
+        </dx-toolbar>
+    </div>
+    <div class="create-body">
+        <div class="card">
+            <dx-scroll-view>
+                <dx-form [colCount]="1">
+                    <div *dxTemplate>
+                        <dx-validation-summary [validationGroup]="validationGroup"></dx-validation-summary>
+                    </div>
+                    <dxi-item>
+                        <div *dxTemplate>
+                            <form-text-box label="Name" [(value)]="model.name!"
+                                [validators]="[{ type: 'required', message: 'Name is a required field' }]"
+                                [validationGroup]="validationGroup"></form-text-box>
+                        </div>
+                    </dxi-item>
+                    <dxi-item>
+                        <div *dxTemplate>
+                            <form-text-box label="Description" [(value)]="model.description!"></form-text-box>
+                        </div>
+                    </dxi-item>
+                </dx-form>
+            </dx-scroll-view>
+        </div>
+    </div>
+</ng-container>
+<div *ngIf="!model" class="create-load-indicator-wrapper">
+    <dx-load-indicator class="create-load-indicator" [height]="50" [width]="50"></dx-load-indicator>
+</div>

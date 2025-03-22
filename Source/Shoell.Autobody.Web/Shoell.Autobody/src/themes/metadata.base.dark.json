@@ -1,0 +1,17 @@
+{
+  "items": [
+    {
+      "key": "$base-accent",
+      "value": "rgba(102, 138, 150, 1)"
+    },
+    {
+      "key": "$button-default-color",
+      "value": "rgba(255, 255, 255, 1)"
+    }
+  ],
+  "baseTheme": "fluent.blue.dark.compact",
+  "assetsBasePath": "../../../node_modules/devextreme/dist/css/",
+  "outputColorScheme": "dark",
+  "makeSwatch": true,
+  "base": true
+}

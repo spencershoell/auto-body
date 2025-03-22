@@ -1,0 +1,36 @@
+﻿@model List<EntityType>;
+@{
+	Layout = null;
+	var companyName = Model.FirstOrDefault()?.Config.CompanyName.AsPascaleCase() ?? string.Empty;
+	var projectName = Model.FirstOrDefault()?.Config.ProjectName.AsPascaleCase() ?? string.Empty;
+	var apiAppObjectId = Model.FirstOrDefault()?.Config.ApiAppObjectId ?? string.Empty;
+	var apiAppId = Model.FirstOrDefault()?.Config.ApiAppId ?? string.Empty;
+	var namespaces = Model.GroupBy(e => e.Namespace);
+}
+{
+	"api": {
+		"oauth2PermissionScopes": [
+			{ "id": "@(Guid.NewGuid())", "value": "Group.Read", "adminConsentDescription": "Allow app to Read Groups", "adminConsentDisplayName": "Read Groups", "userConsentDescription": "Allow app to Read Groups", "userConsentDisplayName": "Read Groups", "isEnabled": true, "type": "Admin" },
+			{ "id": "@(Guid.NewGuid())", "value": "Group.Modify", "adminConsentDescription": "Allow app to Modify Groups", "adminConsentDisplayName": "Modify Groups", "userConsentDescription": "Allow app to Modify Groups", "userConsentDisplayName": "Modify Groups", "isEnabled": true, "type": "Admin" },
+			{ "id": "@(Guid.NewGuid())", "value": "Group.Archive", "adminConsentDescription": "Allow app to Archive Groups", "adminConsentDisplayName": "Archive Groups", "userConsentDescription": "Allow app to Archive Groups", "userConsentDisplayName": "Archive Groups", "isEnabled": true, "type": "Admin" },
+			{ "id": "@(Guid.NewGuid())", "value": "Group.Recycle", "adminConsentDescription": "Allow app to Recycle Groups", "adminConsentDisplayName": "Recycle Groups", "userConsentDescription": "Allow app to Recycle Groups", "userConsentDisplayName": "Recycle Groups", "isEnabled": true, "type": "Admin" },
+
+			{ "id": "@(Guid.NewGuid())", "value": "Role.Read", "adminConsentDescription": "Allow app to Read Roles", "adminConsentDisplayName": "Read Roles", "userConsentDescription": "Allow app to Read Roles", "userConsentDisplayName": "Read Roles", "isEnabled": true, "type": "Admin" },
+
+			{ "id": "@(Guid.NewGuid())", "value": "User.Read", "adminConsentDescription": "Allow app to Read Users", "adminConsentDisplayName": "Read Users", "userConsentDescription": "Allow app to Read Users", "userConsentDisplayName": "Read Users", "isEnabled": true, "type": "Admin" },
+			{ "id": "@(Guid.NewGuid())", "value": "User.Modify", "adminConsentDescription": "Allow app to Modify Users", "adminConsentDisplayName": "Update Users", "userConsentDescription": "Allow app to Modify Users", "userConsentDisplayName": "Modify Users", "isEnabled": true, "type": "Admin" },
+			{ "id": "@(Guid.NewGuid())", "value": "User.Archive", "adminConsentDescription": "Allow app to Archive Users", "adminConsentDisplayName": "Archive Users", "userConsentDescription": "Allow app to Archive Users", "userConsentDisplayName": "Archive Users", "isEnabled": true, "type": "Admin" },
+			{ "id": "@(Guid.NewGuid())", "value": "User.Recycle", "adminConsentDescription": "Allow app to Recycle Users", "adminConsentDisplayName": "Recycle Users", "userConsentDescription": "Allow app to Recycle Users", "userConsentDisplayName": "Recycle Users", "isEnabled": true, "type": "Admin" },
+@foreach(var type in Model)
+{
+	var typeName = type.Name.AsPascaleCase();
+	<text>
+			{ "id": "@(Guid.NewGuid())", "value": "@(typeName).Read", "adminConsentDescription": "Allow app to Read Groups", "adminConsentDisplayName": "Read @(typeName.AsPlural().AsSpacedPascaleCase())", "userConsentDescription": "Allow app to Read @(typeName.AsPlural().AsSpacedPascaleCase())", "userConsentDisplayName": "Read @(typeName.AsPlural().AsSpacedPascaleCase())", "isEnabled": true, "type": "Admin" },
+			{ "id": "@(Guid.NewGuid())", "value": "@(typeName).Modify", "adminConsentDescription": "Allow app to Modify Groups", "adminConsentDisplayName": "Modify @(typeName.AsPlural().AsSpacedPascaleCase())", "userConsentDescription": "Allow app to Modify @(typeName.AsPlural().AsSpacedPascaleCase())", "userConsentDisplayName": "Modify @(typeName.AsPlural().AsSpacedPascaleCase())", "isEnabled": true, "type": "Admin" },
+			{ "id": "@(Guid.NewGuid())", "value": "@(typeName).Archive", "adminConsentDescription": "Allow app to Archive Groups", "adminConsentDisplayName": "Archive @(typeName.AsPlural().AsSpacedPascaleCase())", "userConsentDescription": "Allow app to Archive @(typeName.AsPlural().AsSpacedPascaleCase())", "userConsentDisplayName": "Archive @(typeName.AsPlural().AsSpacedPascaleCase())", "isEnabled": true, "type": "Admin" },
+			{ "id": "@(Guid.NewGuid())", "value": "@(typeName).Recycle", "adminConsentDescription": "Allow app to Recycle Groups", "adminConsentDisplayName": "Recycle @(typeName.AsPlural().AsSpacedPascaleCase())", "userConsentDescription": "Allow app to Recycle @(typeName.AsPlural().AsSpacedPascaleCase())", "userConsentDisplayName": "Recycle @(typeName.AsPlural().AsSpacedPascaleCase())", "isEnabled": true, "type": "Admin" },
+</text>
+}
+		],
+	}	
+}

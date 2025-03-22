@@ -1,0 +1,46 @@
+﻿@model List<EntityType>
+@{
+    Layout = null;
+    var namespaces = Model.GroupBy(e => e.Namespace);
+}
+import { faGear, faSquareQuestion } from "@@fortawesome/pro-solid-svg-icons";
+import { icon } from "@@fortawesome/fontawesome-svg-core";
+
+let fasGear = icon(faGear).html[0];
+let fasSquareQuestion = icon(faSquareQuestion).html[0];
+
+export const navigation = [@foreach (var ns in namespaces.OrderBy(e => e.Key))
+{
+<text>
+    {
+        text: '@(string.IsNullOrEmpty(ns.Key) ? "Base" : ns.Key.AsSpacedPascaleCase())',
+        icon: fasSquareQuestion,
+        items: [</text>
+    foreach(var type in ns.OrderBy(e => e.Name))
+    {
+<text>
+            {
+                text: '@(type.Name.AsSpacedPascaleCase())',
+                path: '/@(type.Name.AsDashedLowerCase())'
+            },</text>
+    }
+<text>
+        ]
+    },</text>
+}
+
+    {
+        text: 'Settings',
+        icon: fasGear,
+        items: [
+            {
+                text: 'Users',
+                path: '/users'
+            },
+            {
+                text: 'Groups',
+                path: '/group'
+            }
+        ]
+    }
+];

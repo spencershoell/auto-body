@@ -1,0 +1,15 @@
+﻿@model EntityType;
+@{
+    Layout = null;
+}
+<div class="list-page view-wrapper">
+    <div class="header-wrapper">
+        <div class="breadcrumbs">
+            <div class="breadcrumb-item"><a [routerLink]="['/']">@(string.IsNullOrEmpty(Model.Namespace) ? "Home" : Model.Namespace.AsSpacedPascaleCase())</a></div>
+            <div class="breadcrumb-item active"><a [routerLink]="['/@Model.Name.AsDashedLowerCase()']">@(Model.Name.AsSpacedPascaleCase().AsPlural())</a></div>
+        </div>
+    </div>
+    <div class="body-wrapper">
+        <@(Model.Config.AppPrefix)-@(Model.Name.AsDashedLowerCase())-list [outsideSlidePanel]="true"></@(Model.Config.AppPrefix)-@(Model.Name.AsDashedLowerCase())-list>
+    </div>
+</div>

@@ -1,0 +1,15 @@
+<div class="detail-page view-wrapper">
+    <div class="header-wrapper">
+        <div class="breadcrumbs">
+            <div class="breadcrumb-item"><a [routerLink]="['/']">Home</a></div>
+            <div class="breadcrumb-item"><a [routerLink]="['/user']">Users</a></div>
+            <div class="breadcrumb-item active" *ngIf="model">{{model.name}}</div>
+            <div class="breadcrumb-item" *ngIf="!model">
+                <dx-load-indicator [height]="12" [width]="12"></dx-load-indicator>
+            </div>
+        </div>
+    </div>
+    <div class="body-wrapper">
+        <sh-user-detail [id]="id"></sh-user-detail>
+    </div>
+</div>

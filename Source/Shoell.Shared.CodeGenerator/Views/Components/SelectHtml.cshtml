@@ -1,0 +1,36 @@
+﻿@model EntityType;
+@{
+    Layout = null;
+}
+<dx-drop-down-box *ngIf="dataSource" contentTemplate="contentTemplate" [dataSource]="dataSource" displayExpr="name"
+    [dropDownOptions]="dropDownOptions" [label]="label" valueExpr="id" [(value)]="value" [readOnly]="!isEditing"
+    [showClearButton]="true" [elementAttr]="{class: 'form-editor'}" [inputAttr]="{class: 'form-editor-input'}"
+    [stylingMode]="stylingMode" (onValueChanged)="onValueChangedEvent($event)">
+    <dxi-button location="after" name="clear"></dxi-button>
+    <dxi-button location="after" name="dropDown"></dxi-button>
+    <dxi-button location="after" name="add"
+        [options]="{ icon: fasPlus, stylingMode: 'text', onClick: create }"></dxi-button>
+    <dx-validator [validationRules]="validators" [validationGroup]="validationGroup"></dx-validator>
+    <div *dxTemplate="let e of 'contentTemplate'">
+        <dx-data-grid [dataSource]="dataSource" [focusedRowEnabled]="false" [height]="400" [hoverStateEnabled]="true"
+            [remoteOperations]="true" [showBorders]="true" [showColumnLines]="false" [showRowLines]="true"
+            [wordWrapEnabled]="true" (onSelectionChanged)="onSelectionChangedHandler($event)"
+            [autoNavigateToFocusedRow]="false">
+            <dxo-paging [enabled]="true" [pageSize]="100"></dxo-paging>
+            <dxo-scrolling mode="virtual" rowRenderingMode="virtual" [preloadEnabled]="true"></dxo-scrolling>
+            <dxo-search-panel [visible]="true" [searchVisibleColumnsOnly]="true"></dxo-search-panel>
+            <dxo-selection mode="single"></dxo-selection>
+            <dxo-toolbar>
+                <dxi-item [visible]="canCreate" location="after" locateInMenu="auto">
+                    <dx-button stylingMode="contained" type="default" [icon]="fasPlus" text="Add {{entityName}}"
+                        (onClick)="create()">
+                    </dx-button>
+                </dxi-item>
+                <dxi-item location="after" locateInMenu="auto" showText="inMenu" widget="dxButton"
+                    [options]="{ text: 'Refresh', icon: 'refresh', onClick: refresh }"></dxi-item>
+                <dxi-item name="searchPanel" locateInMenu="auto"></dxi-item>
+            </dxo-toolbar>
+            <dxi-column dataField="name" sortOrder="asc" [sortIndex]="0"></dxi-column>
+        </dx-data-grid>
+    </div>
+</dx-drop-down-box>

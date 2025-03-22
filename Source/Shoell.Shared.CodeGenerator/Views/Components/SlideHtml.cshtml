@@ -1,0 +1,42 @@
+﻿@model EntityType;
+@{
+    Layout = null;
+}
+<div *ngIf="model" class="slide-panel-wrapper">
+    <div class="slide-panel-header">
+        <dx-toolbar>
+            <dxi-item location="before">
+                <h6>{{entityName}}</h6>
+                <h3>{{model.name}}</h3>
+            </dxi-item>
+        </dx-toolbar>
+    </div>
+    <div class="slide-panel-body">
+        <dx-tab-panel [loop]="false" [animationEnabled]="true" [swipeEnabled]="false" [items]="[
+                { title: 'General', template: 'generalTemplate' },@foreach(var navProperty in Model.NavigationProperties.Where(e => e.IsCollection && e.Type != Model.Name))
+            {
+            <text>
+                { title: '@(navProperty.Name.AsSpacedPascaleCase())', template: '@(navProperty.Name.AsCamelCase())Template' },</text>
+            }
+
+                { title: 'Logs', template: 'logsTemplate' }
+            ]">
+                <div *dxTemplate="let template of 'generalTemplate'">
+                    <@(Model.Config.AppPrefix)-@(Model.Name.AsDashedLowerCase())-edit [id]="id" (onDeleted)="onDeleted()">
+                    </@(Model.Config.AppPrefix)-@(Model.Name.AsDashedLowerCase())-edit>
+                </div>
+            @foreach (var navProperty in Model.NavigationProperties.Where(e => e.IsCollection && e.Type != Model.Name))
+            {
+                <div *dxTemplate="let template of '@(navProperty.Name.AsCamelCase())Template'">
+                    <@(Model.Config.AppPrefix)-@(navProperty.Type.AsDashedLowerCase())-list [@(navProperty.Partner.AsCamelCase())Id]="id">@Html.Raw($"</{Model.Config.AppPrefix}-{navProperty.Type.AsDashedLowerCase()}-list>")
+                </div>
+            }     
+                <div *dxTemplate="let template of 'logsTemplate'">
+                    <@(Model.Config.AppPrefix)-log-list [store]="logStore"></@(Model.Config.AppPrefix)-log-list>
+                </div>
+        </dx-tab-panel>
+    </div>
+</div>
+<div *ngIf="!model" class="slide-load-indicator-wrapper">
+    <dx-load-indicator class="slide-load-indicator" [height]="50" [width]="50"></dx-load-indicator>
+</div>

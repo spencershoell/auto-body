@@ -1,0 +1,63 @@
+﻿@model List<EntityType>;
+@{
+	Layout = null;
+	var companyName = Model.FirstOrDefault()?.Config.CompanyName.AsPascaleCase() ?? string.Empty;
+	var projectName = Model.FirstOrDefault()?.Config.ProjectName.AsPascaleCase() ?? string.Empty;
+	var apiAppObjectId = Model.FirstOrDefault()?.Config.ApiAppObjectId ?? string.Empty;
+	var apiAppId = Model.FirstOrDefault()?.Config.ApiAppId ?? string.Empty;
+	var namespaces = Model.GroupBy(e => e.Namespace);
+}
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+@foreach(var ns in namespaces)
+{
+<text>using @(companyName).@(projectName).Data@(ns.Key == string.Empty ? "" : ".")@(ns.Key).Tests;
+</text>
+}
+using @(companyName).@(projectName).Interfaces;
+using @(companyName).@(projectName).Services;
+
+namespace @(companyName).@(projectName).Data.Tests
+{
+    public class Startup
+    {
+        protected IConfiguration Configuration { get; set; } = null!;
+
+        public void ConfigureHost(IHostBuilder hostBuilder) => hostBuilder
+            .ConfigureHostConfiguration(builder => { })
+            .ConfigureAppConfiguration((context, builder) =>
+            {
+                builder.SetBasePath(context.HostingEnvironment.ContentRootPath)
+                   .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                   .AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", optional: true);
+                Configuration = builder.Build();
+            });
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddHostedService<DatabaseInitializationService>();
+
+            services.AddSingleton((sp) => Configuration);
+
+            services.AddDbContext<@(projectName)Context>
+                (options =>
+                options.UseSqlServer(Configuration.GetConnectionString("@(projectName)Context")));
+
+            services.AddScoped<IDateTimeProvider, @(projectName)DateTimeProvider>();
+
+            services
+                .Add@(projectName)Authorization()
+                .Add@(projectName)Repositories()
+                .AddScoped<UserRepositoryTests>()@foreach(var type in Model)
+{
+<text>
+                .AddScoped<@(type.Name)RepositoryTests>()</text>
+};
+
+            services.AddScoped<IHttpContextAccessor, HttpContextAccessor>();
+        }
+    }
+}

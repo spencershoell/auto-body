@@ -1,0 +1,122 @@
+﻿@* @model EntityType;
+@{
+    Layout = null;
+    var companyName = Model.Config.CompanyName.AsPascaleCase();
+    var projectName = Model.Config.ProjectName.AsPascaleCase();
+    var model1 = Model.Name.Split('_').First();
+    var model2 = Model.Name.Split('_').Last();
+}
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using System.Linq.Expressions;
+using @(companyName).@(projectName).Exceptions;
+using @(companyName).@(projectName).Identity;
+using @(companyName).@(projectName).Interfaces;
+using @(companyName).@(projectName).Models;
+using @(companyName).@(projectName).Models.System;
+using Task = System.Threading.Tasks.Task;
+@if (model2.Equals("File") || model1.Equals("File"))
+{
+    <text>using File = @(companyName).@(projectName).Models.File;</text>
+}
+
+namespace @(companyName).@(projectName).Data;
+public class @(Model.Name.AsPascaleCase())Repository(IServiceProvider serviceProvider, IAuthorizationService authorizationService, @(Model.Config.ProjectName.AsPascaleCase())Context context, IDateTimeProvider dateTimeProvider, IHttpContextAccessor httpContextAccessor) : BaseJoinRepository<@(Model.Name.AsPascaleCase())>
+    {
+    protected override EntityType EntityType => @(Model.Name.AsPascaleCase()).EntityType;
+
+    protected override IAuthorizationService AuthorizationService => authorizationService;
+    protected override @(projectName.AsPascaleCase())Context Context => context;
+    protected override IDateTimeProvider DateTimeProvider => dateTimeProvider;
+    protected override IHttpContextAccessor HttpContextAccessor => httpContextAccessor;
+    protected IServiceProvider ServiceProvider => serviceProvider;
+
+    protected virtual Lazy<@(model1.AsPascaleCase())Repository> @(model1.AsPascaleCase())Repository => new(ServiceProvider.GetRequiredService<@(model1.AsPascaleCase())Repository>());
+    protected virtual Lazy<@(model2.AsPascaleCase())Repository> @(model2.AsPascaleCase())Repository => new(ServiceProvider.GetRequiredService<@(model2.AsPascaleCase())Repository>());
+
+    protected override string ModifyPolicy => @(Model.Name.AsPascaleCase())Roles.Modify;
+    protected override string ReadPolicy => @(Model.Name.AsPascaleCase())Roles.Read;
+
+    protected override Expression<Func<@(Model.Name.AsPascaleCase()), bool>> IdentifierPredicate(Guid @(model1.AsCamelCase())Id, Guid @(model2.AsCamelCase())Id)
+    {
+        return e => e.@(model1.AsPascaleCase())Id == @(model1.AsCamelCase())Id && e.@(model2.AsPascaleCase())Id == @(model2.AsCamelCase())Id;
+    }
+
+    public override async Task<bool> ExistsAsync(@(Model.Name.AsPascaleCase()) model, CancellationToken cancellationToken = default)
+    {
+        return await ExistsAsync(model.@(model1.AsPascaleCase())Id, model.@(model2.AsPascaleCase())Id, cancellationToken);
+    }
+
+    public override async Task<bool> RemoveAsync(Guid @(model1.AsPascaleCase())Id, Guid @(model2.AsPascaleCase())Id, CancellationToken cancellationToken = default)
+    {
+        var entity = await GetAsync(@(model1.AsPascaleCase())Id, @(model2.AsPascaleCase())Id, cancellationToken)
+           ?? throw new NotFoundException($"Could not Remove {EntityType.Name.AsSpacedPascaleCase()} from the datastore. Resource does not exist.");
+
+        await ResolveAuthorizationAsync(entity, ModifyPolicy, cancellationToken);
+
+        EntitySet.Remove(entity);
+
+        await Context.Logs.AddAsync(new Log { Type = @(model1.AsPascaleCase()).EntityType.Type, Action = LogAction.Link, Description = $"Removed @(model2.AsPascaleCase()): {@(model2.AsPascaleCase())Id}", IpAddress = $"{HttpContextAccessor.HttpContext?.Connection.RemoteIpAddress}", UserAgent = $"{HttpContextAccessor.HttpContext?.Request.Headers.UserAgent}", UserId = User.PortalId(), EntityId = @(model1.AsPascaleCase())Id, DateCreated = DateTimeProvider.UtcNow }, cancellationToken);
+        await Context.Logs.AddAsync(new Log { Type = @(model2.AsPascaleCase()).EntityType.Type, Action = LogAction.Link, Description = $"Removed @(model1.AsPascaleCase()): {@(model1.AsPascaleCase())Id}", IpAddress = $"{HttpContextAccessor.HttpContext?.Connection.RemoteIpAddress}", UserAgent = $"{HttpContextAccessor.HttpContext?.Request.Headers.UserAgent}", UserId = User.PortalId(), EntityId = @(model2.AsPascaleCase())Id, DateCreated = DateTimeProvider.UtcNow }, cancellationToken);
+
+        await CommitAsync(cancellationToken);
+        await ApplyPermissionsAsync(cancellationToken);
+        return true;
+    }
+
+    public async Task AddTo@(model2.AsPascaleCase())s(Guid id, List<Guid> @(model2.AsCamelCase())Ids, CancellationToken cancellationToken = default)
+    {
+        var entity = await @(model1.AsPascaleCase())Repository.Value.Get()
+            .Include(e => e.@(model2.AsPascaleCase().AsPlural()))
+            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken)
+           ?? throw new NotFoundException($"{EntityType.Name.AsSpacedPascaleCase()} not found");
+
+        // Check @(model1.AsPascaleCase()) has permission to update @(model2.AsPascaleCase())
+        await ResolveAuthorizationAsync(entity, ModifyPolicy, cancellationToken);
+
+        foreach (var @(model2.AsCamelCase())Id in @(model2.AsCamelCase())Ids)
+        {
+            if (!entity.@(model2.AsPascaleCase().AsPlural()).Any(e => e.@(model2.AsPascaleCase())Id == @(model2.AsCamelCase())Id))
+            {
+                entity.@(model2.AsPascaleCase().AsPlural()).Add(new @(Model.Name.AsPascaleCase()) { @(model2.AsPascaleCase())Id = @(model2.AsCamelCase())Id });
+                await Context.Logs.AddAsync(new Log { Type = @(model2.AsPascaleCase()).EntityType.Type, Action = LogAction.Link, Description = $"Added @(model1.AsPascaleCase()): {id}", IpAddress = $"{HttpContextAccessor.HttpContext?.Connection.RemoteIpAddress}", UserAgent = $"{HttpContextAccessor.HttpContext?.Request.Headers.UserAgent}", UserId = User.PortalId(), EntityId = @(model2.AsCamelCase())Id, DateCreated = DateTimeProvider.UtcNow }, cancellationToken);
+                await Context.Logs.AddAsync(new Log { Type = @(model1.AsPascaleCase()).EntityType.Type, Action = LogAction.Link, Description = $"Added @(model2.AsPascaleCase()): {@(model2.AsCamelCase())Id}", IpAddress = $"{HttpContextAccessor.HttpContext?.Connection.RemoteIpAddress}", UserAgent = $"{HttpContextAccessor.HttpContext?.Request.Headers.UserAgent}", UserId = User.PortalId(), EntityId = id, DateCreated = DateTimeProvider.UtcNow }, cancellationToken);
+            }
+        }
+
+        await CommitAsync(cancellationToken);
+        await ApplyPermissionsAsync(cancellationToken);
+    }
+
+    public async Task AddTo@(model1.AsPascaleCase())s(Guid id, List<Guid> @(model1.AsCamelCase())Ids, CancellationToken cancellationToken = default)
+    {
+        var entity = await @(model2.AsPascaleCase())Repository.Value.Get()
+            .Include(e => e.@(model1.AsPascaleCase().AsPlural()))
+            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken)
+           ?? throw new NotFoundException($"{EntityType.Name.AsSpacedPascaleCase()} not found");
+
+        // Check @(model2.AsPascaleCase()) has permission to update @(model1.AsPascaleCase())
+        await ResolveAuthorizationAsync(entity, ModifyPolicy, cancellationToken);
+
+        foreach (var @(model1.AsCamelCase())Id in @(model1.AsCamelCase())Ids)
+        {
+            if (!entity.@(model1.AsPascaleCase().AsPlural()).Any(e => e.@(model1.AsPascaleCase())Id == @(model1.AsCamelCase())Id))
+            {
+                entity.@(model1.AsPascaleCase().AsPlural()).Add(new @(Model.Name.AsPascaleCase()) { @(model1.AsPascaleCase())Id = @(model1.AsCamelCase())Id });
+                await Context.Logs.AddAsync(new Log { Type = @(model1.AsPascaleCase()).EntityType.Type, Action = LogAction.Link, Description = $"Added @(model2.AsPascaleCase()): {id}", IpAddress = $"{HttpContextAccessor.HttpContext?.Connection.RemoteIpAddress}", UserAgent = $"{HttpContextAccessor.HttpContext?.Request.Headers.UserAgent}", UserId = User.PortalId(), EntityId = @(model1.AsCamelCase())Id, DateCreated = DateTimeProvider.UtcNow }, cancellationToken);
+                await Context.Logs.AddAsync(new Log { Type = @(model2.AsPascaleCase()).EntityType.Type, Action = LogAction.Link, Description = $"Added @(model1.AsPascaleCase()): {@(model1.AsCamelCase())Id}", IpAddress = $"{HttpContextAccessor.HttpContext?.Connection.RemoteIpAddress}", UserAgent = $"{HttpContextAccessor.HttpContext?.Request.Headers.UserAgent}", UserId = User.PortalId(), EntityId = id, DateCreated = DateTimeProvider.UtcNow }, cancellationToken);
+            }
+        }
+
+        await CommitAsync(cancellationToken);
+        await ApplyPermissionsAsync(cancellationToken);
+    }
+
+    protected async Task ApplyPermissionsAsync(CancellationToken cancellationToken = default)
+    {
+        await Context.ApplyPermissionsAsync(cancellationToken);
+    }
+}
+ *@

@@ -1,0 +1,150 @@
+﻿@model EntityType;
+@{
+    Layout = null;
+    var model1 = Model.NavigationProperties.First().Name;
+    var model2 = Model.NavigationProperties.Skip(1).First().Name;
+
+    var modelType1 = Model.NavigationProperties.First().Type;
+    var modelType2 = Model.NavigationProperties.Skip(1).First().Type;
+}
+import { Component, ComponentRef, Input, NgModule } from '@@angular/core';
+
+import DataSource from 'devextreme/data/data_source';
+import Guid from 'devextreme/core/guid';
+import { Common } from 'src/app/classes';
+import { DxButtonModule, DxDataGridModule } from 'devextreme-angular';
+import { RouterModule } from '@@angular/router';
+import { @(model1.AsPascaleCase())_@(model2.AsPascaleCase())DataGrid } from 'src/app/data/models';
+import { SlidePanelService } from 'src/app/layouts/slide-panel/slide-panel.services';
+import { @(model1.AsPascaleCase())_@(model2.AsPascaleCase())LinkComponent } from './link.component';
+import { BaseJoinListComponent } from 'src/app/shared/components';
+import { AuthorizationService } from 'src/app/shared/services';
+import { Context } from 'src/app/data';
+import { icon } from '@@fortawesome/fontawesome-svg-core';
+import { faLink, faPlus } from '@@fortawesome/pro-solid-svg-icons';
+import { faRefresh } from '@@fortawesome/pro-light-svg-icons';@{
+    foreach (var navType in Model.NavigationProperties
+        .Where(e => !e.IsCollection && e.ForeignKey.AsCamelCase() != "id")
+        .Select(e => e.Type)
+        .Distinct()
+    )
+    {
+        var typeNamespace = Model.NavigationProperties.FirstOrDefault(e => e.Type == navType)?.TypeNamespace ?? string.Empty;
+        <text>
+import { @(navType.AsPascaleCase())CreateComponent } from "src/app/shared/components/@{ if(!string.IsNullOrEmpty(typeNamespace)) { <text>@(typeNamespace)/</text> } }@(navType.AsDashedLowerCase())/create.component";</text>
+    }
+}
+import { NgIf } from '@@angular/common';
+
+@@Component({
+    selector: '@(Model.Config.AppPrefix)-@(Model.Name.AsDashedLowerCase())-list',
+    templateUrl: 'list.component.html',
+    styleUrls: ['list.component.scss'],
+    imports: [NgIf, RouterModule, DxButtonModule, DxDataGridModule]
+})
+export class @(Model.Name.AsPascaleCase())ListComponent extends BaseJoinListComponent<@(model1.AsPascaleCase())_@(model2.AsPascaleCase())DataGrid> {
+  @@Input() @(model1.AsCamelCase())Id?: Guid;
+  @@Input() @(model2.AsCamelCase())Id?: Guid;
+
+  get show@(model1.AsPascaleCase())(): boolean {
+    return Common.isNull(this.@(model1.AsCamelCase())Id);
+  }
+
+  get show@(model2.AsPascaleCase())(): boolean {
+    return Common.isNull(this.@(model2.AsCamelCase())Id);
+  }
+
+  get canCreate@(model1.AsPascaleCase())(): boolean {
+    return !this.@(model1.AsCamelCase())Id && this.authorizationService.canCreate(this.entityType1);
+  }
+
+  get canCreate@(model2.AsPascaleCase())(): boolean {
+    return !this.@(model2.AsCamelCase())Id && this.authorizationService.canCreate(this.entityType2);
+  }
+
+  override entityType1: string = "@(model1.AsPascaleCase())";
+  override entityType2: string = "@(model2.AsPascaleCase())";
+
+  fasPlus = icon(faPlus).html[0];
+  fasLink = icon(faLink).html[0];
+  falRefresh = icon(faRefresh).html[0];
+
+
+  constructor(
+    private slideService: SlidePanelService,
+    protected authorizationService: AuthorizationService,
+    context: Context,
+  ) {
+    super();
+    this._dataGrid = new @(model1.AsPascaleCase())_@(model2.AsPascaleCase())DataGrid();
+    this.dataSource = new DataSource({
+      store: context.@(model1.AsCamelCase())_@(model2.AsPascaleCase().AsPlural()),
+      select: this.buildSelect(),
+      filter: this.buildFilter(),
+      onLoadingChanged: this.onLoadingChanged.bind(this)
+    });
+
+    slideService.popComponent$.subscribe((componentType) => {
+      if (componentType === @(model1.AsPascaleCase())_@(model2.AsPascaleCase())LinkComponent) {
+        this.refresh();
+      }
+    });
+
+    this.create@(model2.AsPascaleCase()) = this.create@(model2.AsPascaleCase()).bind(this);
+    this.create@(model1.AsPascaleCase()) = this.create@(model1.AsPascaleCase()).bind(this);
+  }
+
+  create@(model2.AsPascaleCase())(): void {
+    this.slideService.pushComponent({
+      componentType: @(modelType2.AsPascaleCase())CreateComponent,
+      setInputs: (componentRef: ComponentRef<@(modelType2.AsPascaleCase())CreateComponent>) => {
+      },
+      title: `Create @(modelType2.AsPascaleCase())`,
+      forceOverlay: true
+    });
+  }
+
+  create@(model1.AsPascaleCase())(): void {
+    this.slideService.pushComponent({
+      componentType: @(modelType1.AsPascaleCase())CreateComponent,
+      setInputs: (componentRef: ComponentRef<@(modelType1.AsPascaleCase())CreateComponent>) => {
+      },
+      title: `Create @(modelType1.AsPascaleCase())`,
+      forceOverlay: true
+    });
+  }
+
+  link(): void {
+    this.slideService.pushComponent({
+      componentType: @(model1.AsPascaleCase())_@(model2.AsPascaleCase())LinkComponent,
+      setInputs: (componentRef: ComponentRef<@(model1.AsPascaleCase())_@(model2.AsPascaleCase())LinkComponent>) => {
+        if (Common.isNotNull(this.@(model1.AsCamelCase())Id)) {
+          componentRef.instance.@(model1.AsCamelCase())Id = this.@(model1.AsCamelCase())Id;
+        }
+        if (Common.isNotNull(this.@(model2.AsCamelCase())Id)) {
+          componentRef.instance.@(model2.AsCamelCase())Id = this.@(model2.AsCamelCase())Id;
+        }
+      },
+      title: `Link ${this.show@(model1.AsPascaleCase()) ? "@(model1.AsPascaleCase())" : "@(model2.AsPascaleCase())"} to ${!this.show@(model1.AsPascaleCase()) ? "@(model1.AsPascaleCase())" : "@(model2.AsPascaleCase())"}`
+    });
+  }
+
+  protected prepareFilters(filter: any[]): void {
+    if (Common.isNotNull(this.@(model1.AsCamelCase())Id)) {
+      filter.push(["@(model1.AsCamelCase())Id", this.@(model1.AsCamelCase())Id?.valueOf()]);
+    }
+    if (Common.isNotNull(this.@(model2.AsCamelCase())Id)) {
+      if (filter.length > 0) {
+        filter.push("and");
+      }
+      filter.push(["@(model2.AsCamelCase())Id", this.@(model2.AsCamelCase())Id?.valueOf()]);
+    }
+  }
+
+  protected override buildSelect(): any[] {
+    let select = [];
+    select.push("@(model1.AsCamelCase())Id", "@(model1.AsCamelCase()).name", "@(model1.AsCamelCase()).description");
+    select.push("@(model2.AsCamelCase())Id", "@(model2.AsCamelCase()).name", "@(model2.AsCamelCase()).description");
+    return select;
+  }
+}

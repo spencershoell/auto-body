@@ -1,0 +1,9 @@
+﻿@model List<EntityType>;
+@{
+    Layout = null;
+}
+@foreach (var entityName in Model.Where(e => e.Keys.Count > 1).OrderBy(e => e.Name))
+{
+<text>
+    export * from './@(entityName.Name.AsDashedLowerCase()).repository';</text>
+}

@@ -1,0 +1,127 @@
+﻿@* @model EntityType;
+@{
+    Layout = null;
+    var model1 = Model.Name.Split('_').First();
+    var model2 = Model.Name.Split('_').Last();
+}
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Formatter;
+using Microsoft.AspNetCore.OData.Query;
+using Microsoft.Identity.Web.Resource;
+using System.Linq.Expressions;
+using @(Model.Config.CompanyName).@(Model.Config.ProjectName).Data;
+using @(Model.Config.CompanyName).@(Model.Config.ProjectName).Identity;
+using @(Model.Config.CompanyName).@(Model.Config.ProjectName).Models;
+using @(Model.Config.CompanyName).@(Model.Config.ProjectName).Services.@(Model.Name.AsPascaleCase())DtoModels;
+@if (model2.Equals("File") || model1.Equals("File"))
+{
+    <text>using File = @(Model.Config.CompanyName).@(Model.Config.ProjectName).Models.File;</text>
+}
+@if (model2.Equals("File") || model1.Equals("File"))
+{
+    <text>using Task = @(Model.Config.CompanyName).@(Model.Config.ProjectName).Models.Task;</text>
+}
+
+namespace @(Model.Config.CompanyName).@(Model.Config.ProjectName).Services;
+public class @(Model.Name.AsPascaleCase().AsPlural())Controller(@(Model.Name.AsPascaleCase())Repository repository) : IntersectController<@(Model.Name.AsPascaleCase())>
+{
+    protected override @(Model.Name.AsPascaleCase())Repository Repository => repository;
+
+    protected override Expression<Func<@(Model.Name.AsPascaleCase()), bool>> IdentifierPredicate(Guid @(model1.AsCamelCase())Id, Guid @(model2.AsCamelCase())Id)
+    {
+        return e => e.@(model1.AsPascaleCase())Id == @(model1.AsCamelCase())Id && e.@(model2.AsPascaleCase())Id == @(model2.AsCamelCase())Id;
+    }
+
+    protected override string[] ReadScopes => [@(model1.AsPascaleCase())Roles.Read, @(model2.AsPascaleCase())Roles.Read];
+    protected override string[] ModifyScopes => [@(model1.AsPascaleCase())Roles.Read, @(model1.AsPascaleCase())Roles.Modify, @(model2.AsPascaleCase())Roles.Read, @(model2.AsPascaleCase())Roles.Modify];
+
+    // GET: odata/@(Model.Name.AsPascaleCase().AsPlural())(@(model1.AsCamelCase())Id=[@(model1.AsPascaleCase())Id],@(model2.AsCamelCase())Id=[@(model2.AsPascaleCase())Id])
+    [HttpGet]
+    [EnableQuery]
+    public override IActionResult Get([FromODataUri] Guid key@(model1.AsCamelCase())Id, [FromODataUri] Guid key@(model2.AsCamelCase())Id, CancellationToken cancellationToken = default)
+    {
+        return base.Get(key@(model1.AsCamelCase())Id, key@(model2.AsCamelCase())Id, cancellationToken);
+    }
+
+    // DELETE: odata/@(Model.Name.AsPascaleCase().AsPlural())(@(model1.AsCamelCase())Id=[@(model1.AsPascaleCase())Id],@(model2.AsCamelCase())Id=[@(model2.AsPascaleCase())Id])
+    [HttpDelete]
+    public override async Task<IActionResult> Delete([FromODataUri] Guid key@(model1.AsCamelCase())Id, [FromODataUri] Guid key@(model2.AsCamelCase())Id, CancellationToken cancellationToken = default)
+    {
+        return await base.Delete(key@(model1.AsCamelCase())Id, key@(model2.AsCamelCase())Id, cancellationToken);
+    }
+
+    // POST: odata/@(Model.Name.AsPascaleCase().AsPlural())/AddTo@(model1.AsPascaleCase().AsPlural())
+    [HttpPost]
+    public async Task<IActionResult> AddTo@(model1.AsPascaleCase().AsPlural())(ODataActionParameters parameters, CancellationToken cancellationToken = default)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        HttpContext.VerifyUserHasAnyAcceptedScope(ModifyScopes);
+
+        try
+        {
+            var model = (Add@(model2.AsPascaleCase())To@(model1.AsPascaleCase().AsPlural())Dto)parameters.FirstOrDefault(e => e.Key == "model").Value;
+
+            await Repository.AddTo@(model1.AsPascaleCase().AsPlural())(model.@(model2.AsPascaleCase())Id, model.@(model1.AsPascaleCase())Ids, cancellationToken);
+            await Repository.CommitAsync(cancellationToken);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            var odataError = BuildODataError(ex);
+
+            switch (odataError.ErrorCode)
+            {
+                case "400":
+                    return BadRequest(odataError);
+                case "401":
+                    return Unauthorized(odataError);
+                case "403":
+                    return ODataErrorResult(odataError);
+                default:
+                    break;
+            }
+
+            return ODataErrorResult(odataError);
+        }
+    } 
+    
+    // POST: odata/@(Model.Name.AsPascaleCase().AsPlural())/AddTo@(model2.AsPascaleCase().AsPlural())
+    [HttpPost]
+    public async Task<IActionResult> AddTo@(model2.AsPascaleCase().AsPlural())(ODataActionParameters parameters, CancellationToken cancellationToken = default)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        HttpContext.VerifyUserHasAnyAcceptedScope(ModifyScopes);
+
+        try
+        {
+            var model = (Add@(model1.AsPascaleCase())To@(model2.AsPascaleCase().AsPlural())Dto)parameters.FirstOrDefault(e => e.Key == "model").Value;
+
+            await Repository.AddTo@(model2.AsPascaleCase().AsPlural())(model.@(model1.AsPascaleCase())Id, model.@(model2.AsPascaleCase())Ids, cancellationToken);
+            await Repository.CommitAsync(cancellationToken);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            var odataError = BuildODataError(ex);
+
+            switch (odataError.ErrorCode)
+            {
+                case "400":
+                    return BadRequest(odataError);
+                case "401":
+                    return Unauthorized(odataError);
+                case "403":
+                    return ODataErrorResult(odataError);
+                default:
+                    break;
+            }
+
+            return ODataErrorResult(odataError);
+        }
+    } 
+}
+ *@

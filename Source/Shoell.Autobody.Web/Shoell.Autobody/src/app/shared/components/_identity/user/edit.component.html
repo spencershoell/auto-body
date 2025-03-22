@@ -1,0 +1,88 @@
+<ng-container *ngIf="!isLoading && model">
+    <div class="edit-header">
+        <dx-toolbar>
+            <!-- Edit Buttons -->
+            <!-- -- Edit -->
+            <dxi-item location="before" [visible]="!isEditing && !isDeleting && !isSaving && canUpdate">
+                <dx-button text="Edit" [icon]="fasPen" stylingMode="outlined" type="default"
+                    (onClick)="toggleEdit()"></dx-button>
+            </dxi-item>
+            <!-- -- Save -->
+            <dxi-item location="before" [visible]="isEditing && !isDeleting && !isSaving && canUpdate">
+                <dx-button text="Save" [icon]="fasFloppyDisk" stylingMode="outlined" type="default"
+                    [disabled]="pristine" (onClick)="save()"></dx-button>
+            </dxi-item>
+            <!-- -- Saving -->
+            <dxi-item location="before" [visible]="isSaving && !isDeleting && canUpdate">
+                <dx-load-indicator></dx-load-indicator>
+            </dxi-item>
+            <!-- -- Cancel -->
+            <dxi-item location="before" locateInMenu="before"
+                [visible]="isEditing && !isDeleting && !isSaving && canUpdate">
+                <dx-button text="Cancel" (onClick)="toggleEdit()" stylingMode="text"></dx-button>
+            </dxi-item>
+            <!-- Archive Buttons -->
+            <dxi-item location="after" locateInMenu="before"
+                [visible]="!isArchiving && !isDeleting && !isSaving && !model.isArchived && canArchive">
+                <dx-button text="Archive" [icon]="farBoxArchive" (onClick)="archive()"
+                    stylingMode="outlined"></dx-button>
+            </dxi-item>
+            <dxi-item location="after" locateInMenu="before"
+                [visible]="!isArchiving && !isDeleting && !isSaving && model.isArchived && canArchive">
+                <dx-button text="Restore" [icon]="fasBoxArchive" (onClick)="restore()"
+                    stylingMode="outlined"></dx-button>
+            </dxi-item>
+            <dxi-item location="after" [visible]="isArchiving && !isDeleting && !isSaving && canArchive">
+                <dx-load-indicator></dx-load-indicator>
+            </dxi-item>
+            <!-- Delete Buttons -->
+            <!-- -- Cancel -->
+            <dxi-item location="after" locateInMenu="before"
+                [visible]="isConfirmingDelete && !isDeleting && !isSaving && canDelete">
+                <dx-button text="Cancel" (onClick)="toggleConfirmDelete()" stylingMode="text"></dx-button>
+            </dxi-item>
+            <!-- -- Delete -->
+            <dxi-item location="after" [visible]="!isConfirmingDelete && !isDeleting && !isSaving && canDelete">
+                <dx-button text="Delete" [icon]="fasTrash" stylingMode="outlined" type="danger" [disabled]="!pristine"
+                    (onClick)="toggleConfirmDelete()"></dx-button>
+            </dxi-item>
+            <!-- -- Confirm Delete -->
+            <dxi-item location="after" [visible]="isConfirmingDelete && !isDeleting && !isSaving && canDelete">
+                <dx-button text=" Confirm" [icon]="fasFloppyDisk" stylingMode="contained" type="danger"
+                    (onClick)="delete()"></dx-button>
+            </dxi-item>
+            <!-- -- Deleting -->
+            <dxi-item location="after" [visible]="isDeleting && !isSaving && canDelete">
+                <dx-load-indicator></dx-load-indicator>
+            </dxi-item>
+        </dx-toolbar>
+    </div>
+    <div class="edit-body">
+        <div class="card">
+            <dx-scroll-view>
+                <dx-form [colCount]="1">
+                    <dxi-item>
+                        <dx-validation-summary [validationGroup]="validationGroup"></dx-validation-summary>
+                    </dxi-item>
+                    <dxi-item>
+                        <form-text-box label="User Name" [(value)]="model.userName!" [isEditing]="isEditing"
+                            [validators]="[{ type: 'required', message: 'User Name is a required field' }]"
+                            [validationGroup]="validationGroup" (valueChange)="fieldDataChanged()"></form-text-box>
+                    </dxi-item>
+                    <dxi-item>
+                        <form-text-box label="Email" [(value)]="model.email!" [isEditing]="isEditing"
+                            [validators]="[{ type: 'required', message: 'Email is a required field' }, { type: 'email', message: 'Email is not valid' }]"
+                            [validationGroup]="validationGroup" (valueChange)="fieldDataChanged()"></form-text-box>
+                    </dxi-item>
+                    <dxi-item>
+                        <form-text-box label="External Id" [(value)]="model.externalId!" [isEditing]="isEditing"
+                            (valueChange)="fieldDataChanged()"></form-text-box>
+                    </dxi-item>
+                </dx-form>
+            </dx-scroll-view>
+        </div>
+    </div>
+</ng-container>
+<div *ngIf="isLoading || !model" class="edit-load-indicator-wrapper">
+    <dx-load-indicator class="edit-load-indicator" [height]="50" [width]="50"></dx-load-indicator>
+</div>

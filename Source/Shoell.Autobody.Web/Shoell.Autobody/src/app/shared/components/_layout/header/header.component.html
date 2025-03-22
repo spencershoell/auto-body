@@ -1,0 +1,34 @@
+<header>
+  <dx-toolbar class="header-toolbar">
+    <dxi-item *ngIf="menuToggleEnabled" location="before" widget="dxButton" cssClass="menu-button" [options]="{
+        icon: 'menu',
+        stylingMode: 'text',
+        onClick: toggleMenu
+      }">
+    </dxi-item>
+    <dxi-item location="before" menuItemTemplate="menuItem">
+      <div *dxTemplate="let data of 'menuItem'">
+        <img class="logo-light" src='/assets/site-logo-light.png' height='35' />
+        <img class="logo-dark" src='/assets/site-logo-dark.png' height='35' />
+      </div>
+    </dxi-item>
+    <dxi-item location="before" cssClass="header-title" *ngIf="title" [text]="title"></dxi-item>
+    <dxi-item location="after">
+      <ng-container *dxTemplate>
+        <sh-theme-switcher></sh-theme-switcher>
+      </ng-container>
+    </dxi-item>
+    <dxi-item location="after" locateInMenu="auto" menuItemTemplate="menuItem">
+      <div *dxTemplate="let data of 'item'">
+        <dx-button class="user-button authorization" height="100%" stylingMode="text">
+          <div *dxTemplate="let data of 'content'">
+            <sh-user-panel [menuItems]="userMenuItems" menuMode="context"></sh-user-panel>
+          </div>
+        </dx-button>
+      </div>
+    </dxi-item>
+    <div *dxTemplate="let data of 'menuItem'">
+      <sh-user-panel [menuItems]="userMenuItems" menuMode="list"></sh-user-panel>
+    </div>
+  </dx-toolbar>
+</header>

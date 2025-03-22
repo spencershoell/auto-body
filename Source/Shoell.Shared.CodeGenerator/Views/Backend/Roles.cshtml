@@ -1,0 +1,47 @@
+﻿@model EntityType;
+@{
+    Layout = null;
+    var companyName = Model.Config.CompanyName.AsPascaleCase();
+    var projectName = Model.Config.ProjectName.AsPascaleCase();
+    var ns = (Model.Namespace == string.Empty) ? string.Empty : $".{Model.Namespace}";
+    var name = Model.Name.AsPascaleCase();
+}
+using @(companyName).Shared.Types;
+using @(companyName).@(projectName).Models;
+@{
+    if(Model.Name.ToLower() == "task")
+    {
+<text>using @(name) = @(companyName).@(projectName).Models@(ns).@(name);
+</text>
+    }
+    if(!string.IsNullOrEmpty(ns))
+    {
+<text>using @(companyName).@(projectName).Models@(ns);
+</text>
+    }
+}
+
+namespace @(companyName).@(projectName).Identity@(ns)
+{
+    public static class @(name)Roles
+    {
+        private static readonly string Prefix = @(name).EntityType.Type;
+
+        // CRUD
+        public static readonly string Read = $"{Prefix}.{UserAction.Read}";
+        public static readonly string Create = $"{Prefix}.{UserAction.Create}";
+        public static readonly string Update = $"{Prefix}.{UserAction.Update}";
+        public static readonly string Delete = $"{Prefix}.{UserAction.Delete}";
+
+        public static readonly string Modify = $"{Prefix}.{UserAction.Modify}";
+
+        // Soft Delete
+        public static readonly string Recycle = $"{Prefix}.{UserAction.Recycle}";
+        public static readonly string Recover = $"{Prefix}.{UserAction.Recover}";
+        public static readonly string Purge = $"{Prefix}.{UserAction.Purge}";
+
+        // Archive
+        public static readonly string Archive = $"{Prefix}.{UserAction.Archive}";
+        public static readonly string Restore = $"{Prefix}.{UserAction.Restore}";
+    }
+}

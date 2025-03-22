@@ -1,0 +1,30 @@
+<div *ngIf="model" class="slide-panel-wrapper">
+    <div class="slide-panel-header">
+        <dx-toolbar>
+            <dxi-item location="before">
+                <h6>{{entityName}}</h6>
+                <h3>{{model.name}}</h3>
+            </dxi-item>
+        </dx-toolbar>
+    </div>
+    <div class="slide-panel-body">
+        <dx-tab-panel [loop]="false" [animationEnabled]="true" [swipeEnabled]="false" [items]="[
+                { title: 'General', template: 'generalTemplate' },
+                { title: 'Groups', template: 'groupsTemplate'},
+                     { title: 'Logs', template: 'logsTemplate' }
+            ]">
+            <div *dxTemplate="let template of 'generalTemplate'" class="tab-panel-item">
+                <sh-user-edit [id]="id" [inSlide]="true" (onDeleted)="onDeleted()"></sh-user-edit>
+            </div>
+            <div *dxTemplate="let template of 'groupsTemplate'" class="tab-panel-item">
+                <sh-user-group-list [userId]="id"></sh-user-group-list>
+            </div>
+            <div *dxTemplate="let template of 'logsTemplate'" class="tab-panel-item">
+                <sh-log-list [store]="logStore" [showTitle]="false"></sh-log-list>
+            </div>
+        </dx-tab-panel>
+    </div>
+</div>
+<div *ngIf="!model" class="slide-load-indicator-wrapper">
+    <dx-load-indicator class="slide-load-indicator" [height]="50" [width]="50"></dx-load-indicator>
+</div>

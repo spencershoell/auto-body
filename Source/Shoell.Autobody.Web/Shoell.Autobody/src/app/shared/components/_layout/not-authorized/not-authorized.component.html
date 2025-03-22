@@ -1,0 +1,46 @@
+<div class="layout-header">
+    <header>
+        <dx-toolbar class="header-toolbar">
+            <dxi-item location="before" menuItemTemplate="menuItem">
+                <div *dxTemplate="let data of 'menuItem'">
+                    <img src='/assets/site-logo-light.png' height='50' />
+                </div>
+            </dxi-item>
+        </dx-toolbar>
+    </header>
+</div>
+<div class="layout-content">
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <div class="dx-card">
+                    <h3>You are not authorized to access this resource.</h3>
+                    <p>The 'Basic' role is required to access this resource. Your current roles are
+                        {{account.idTokenClaims?.roles | json}}</p>
+                    <dx-button (click)="logout($event)" type="default">
+                        <fa-icon [icon]="faRightFromBracket"></fa-icon>&nbsp;Log out
+                    </dx-button>
+                </div>
+                <div class="dx-card mt-2">
+                    <h3>Account Details</h3>
+                    <dl class="row">
+                        <dt class="col-2">Username</dt>
+                        <dd class="col-10">{{account.username}}</dd>
+                        <dt class="col-2">Name</dt>
+                        <dd class="col-10">{{account.name}}</dd>
+                        <dt class="col-2">Local Account Id</dt>
+                        <dd class="col-10">{{account.localAccountId}}</dd>
+                        <dt class="col-2">Tenant Id</dt>
+                        <dd class="col-10">{{account.tenantId}}</dd>
+                        <dt class="col-2">Home Account Id</dt>
+                        <dd class="col-10">{{account.homeAccountId}}</dd>
+                        <dt class="col-2">Environment</dt>
+                        <dd class="col-10">{{account.environment}}</dd>
+                        <dt class="col-2">Roles</dt>
+                        <dd class="col-10">{{account.idTokenClaims?.roles | json}}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

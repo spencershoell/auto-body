@@ -1,0 +1,260 @@
+﻿@model EntityType;
+@{
+	Layout = null;
+	var companyName = Model.Config.CompanyName.AsPascaleCase();
+	var projectName = Model.Config.ProjectName.AsPascaleCase();
+	var ns = (Model.Namespace == string.Empty) ? string.Empty : $".{Model.Namespace}";
+	var name = Model.Name.AsPascaleCase();
+	var baseType = (Model.BaseType != string.Empty) ? $"{Model.BaseType}, " : "";
+	var displayNew = (Model.BaseType != string.Empty) ? " new" : string.Empty;
+    var isUser = Model.Name.ToLower() == "user" && Model.Namespace.ToLower() == "identity";
+
+if(isUser)
+{
+<text>using Microsoft.AspNetCore.Identity;
+using @(companyName).@(projectName).Models.System;
+using @(companyName).Shared.Interfaces;
+using @(companyName).Shared.Interfaces.System;
+</text>
+}
+}
+using @(companyName).Shared.Interfaces@(ns);
+using @(companyName).Shared.Types;
+@if (Model.NavigationProperties.Any(e => !isUser && string.IsNullOrEmpty(e.TypeNamespace)))
+{
+<text>using @(companyName).Shared.Interfaces;
+</text>
+}
+@foreach (var _ns in Model.NavigationProperties
+	.Where(e => !string.IsNullOrEmpty(e.TypeNamespace) && e.TypeNamespace != Model.Namespace)
+	.OrderBy(e => e.TypeNamespace)
+	.Select(e => e.TypeNamespace)
+	.Distinct())
+{
+<text>using @(companyName).@(projectName).Models.@(_ns);
+</text>
+}
+@foreach (var _ns in Model.NavigationProperties
+	.Where(e => !string.IsNullOrEmpty(e.TypeNamespace) && e.TypeNamespace != Model.Namespace)
+	.OrderBy(e => e.TypeNamespace)
+	.Select(e => e.TypeNamespace)
+	.Distinct())
+{
+<text>using @(companyName).Shared.Interfaces.@(_ns);
+</text>
+}
+@if (Model.Properties.Any(e => e.Precision != null || e.Scale != null))
+{
+<text>using Microsoft.EntityFrameworkCore;
+</text>
+}
+@if (Model.Properties.Any(e => e.MaxLength != null))
+{
+<text>using System.ComponentModel.DataAnnotations;
+</text>
+}
+
+namespace @(companyName).@(projectName).Models@(ns)
+{
+	public class @(name) :@{ if (isUser) { <text> IdentityUser<Guid>,</text> } } @(baseType)I@(name)
+	{
+		public static@(displayNew) EntityType EntityType => new(nameof(@(name)));@{
+
+	if (string.IsNullOrEmpty(Model.BaseType))
+	{
+<text>		
+
+		public long RowId { get; set; }
+</text>
+	}
+
+	if(isUser)
+	{
+<text>		public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string ExternalId { get; set; } = string.Empty;
+        public bool IsArchived { get; set; }
+
+        public DateTime DateCreated { get; set; }
+        public DateTime DateModified { get; set; }
+        public DateTime? DateArchived { get; set; }
+        public DateTime? DateDeleted { get; set; }
+
+        public Guid CreatedById { get; set; }
+        public Guid ModifiedById { get; set; }
+        public Guid? ArchivedById { get; set; }
+        public Guid? DeletedById { get; set; }
+
+        public User CreatedBy { get; set; } = null!;
+        public User ModifiedBy { get; set; } = null!;
+        public User? ArchivedBy { get; set; }
+        public User? DeletedBy { get; set; }
+
+        public virtual ICollection<User_Group> UserGroups { get; set; } = [];
+        public virtual ICollection<Log> Logs { get; set; } = [];
+        public virtual ICollection<User_Role> UserRoles { get; set; } = [];
+
+        public User()
+        {
+            Id = Guid.NewGuid();
+            UserName = string.Empty;
+            NormalizedUserName = string.Empty;
+            Email = string.Empty;
+            NormalizedEmail = string.Empty;
+            EmailConfirmed = false;
+            PasswordHash = string.Empty;
+            SecurityStamp = Guid.NewGuid().ToString();
+            PhoneNumber = string.Empty;
+            PhoneNumberConfirmed = false;
+            TwoFactorEnabled = false;
+            LockoutEnd = null;
+            LockoutEnabled = false;
+            AccessFailedCount = 0;
+        }
+
+        #region Implementation of IRepositoryEntity
+        IUser IBaseModel.CreatedBy
+        {
+            get => CreatedBy;
+            set => CreatedBy = value as User ?? new();
+        }
+
+        IUser IBaseModel.ModifiedBy
+        {
+            get => ModifiedBy;
+            set => ModifiedBy = value as User ?? new();
+        }
+
+        IUser? IBaseModel.ArchivedBy
+        {
+            get => ArchivedBy;
+            set => ArchivedBy = value as User;
+        }
+
+        IUser? IBaseModel.DeletedBy
+        {
+            get => DeletedBy;
+            set => DeletedBy = value as User;
+        }
+        #endregion
+</text>
+	}
+
+	if(Model.Properties.Count > 0)
+	{			
+<text>
+
+</text>
+		foreach (var property in Model.Properties)
+		{
+			var propertyType = property.Type.GetCSharpType();
+			var propertyName = property.Name.AsPascaleCase();
+			var nullable = (property.Nullable) ? "?" : string.Empty;
+			var defaultValue = (property.DefaultValue != null) 
+				? $" = {property.DefaultValue};" 
+				: (!property.Nullable && property.Type.GetCSharpType() == "string") 
+					? " = string.Empty;" 
+					: string.Empty;
+			var overrideKeyword = (Model.BaseType.ToLower() == "basemodel" && (property.Name.ToLower() == "name" || property.Name.ToLower() == "description")) ? "override " : string.Empty;
+			if (property.Precision != null || property.Scale != null)
+			{
+				var precision = property.Precision ?? property.Scale ?? 0;
+				var scale = property.Scale ?? property.Precision ?? 0;
+<text>		[Precision(@(precision), @(scale))]
+</text>
+			}
+			if(property.MaxLength != null)
+			{	
+<text>		[MaxLength(@(property.MaxLength))]
+</text>
+			}	
+<text>		public @(overrideKeyword)@(propertyType)@(nullable) @(propertyName) { get; set; }@Html.Raw(defaultValue)
+</text>
+		}
+	}
+}		
+
+@if (Model.NavigationProperties.Where(e => !e.IsCollection).Count() > 0)
+{
+<text>
+</text>
+	@foreach (var navProperty in Model.NavigationProperties.Where(e => !e.IsCollection && e.ForeignKey.AsPascaleCase() != "Id"))
+	{
+<text>		public Guid@((navProperty.Nullable) ? "?" : string.Empty) @(navProperty.ForeignKey.AsPascaleCase()) { get; set; }
+</text>
+	}
+}
+@if (Model.NavigationProperties.Where(e => !e.IsCollection).Count() > 0)
+{
+<text>
+</text>
+	@foreach (var navProperty in Model.NavigationProperties.Where(e => !e.IsCollection))
+	{
+<text>		public virtual @(navProperty.Type.GetCSharpType())@((navProperty.Nullable) ? "?" : string.Empty) @(navProperty.Name.AsPascaleCase()) { get; set; }@((!navProperty.Nullable) ? " = null!;" : string.Empty)
+</text>
+	}
+}
+@if (Model.NavigationProperties.Where(e => e.IsCollection).Count() > 0)
+{
+<text>
+</text>
+	@foreach(var navProperty in Model.NavigationProperties.Where(e => e.IsCollection))
+	{
+<text>		public virtual ICollection<@(navProperty.Type.GetCSharpType())>@((navProperty.Nullable) ? "?" : string.Empty) @(navProperty.Name.AsPascaleCase()) { get; set; }@((!navProperty.Nullable) ? " = [];" : string.Empty)
+</text>
+	}
+}
+
+		#region Implementation of I@(name)
+@if(Model.NavigationProperties.Where(e => !e.IsCollection).Count() > 0)
+{
+	@foreach (var navProperty in Model.NavigationProperties.Where(e => !e.IsCollection))
+	{
+<text>		I@(navProperty.Type.GetCSharpType())@((navProperty.Nullable) ? "?" : string.Empty) I@(name).@(navProperty.Name.AsPascaleCase())
+		{
+			get => @(navProperty.Name.AsPascaleCase());
+			set => @(navProperty.Name.AsPascaleCase()) = value as @(navProperty.Type.AsPascaleCase()) ?? new();
+		}
+</text>
+	}
+}
+@{if (Model.NavigationProperties.Where(e => e.IsCollection).Count() > 0)
+{
+<text>
+</text>
+	@foreach (var navProperty in Model.NavigationProperties.Where(e => e.IsCollection))
+	{
+<text>		ICollection<I@(navProperty.Type.GetCSharpType())>@((navProperty.Nullable) ? "?" : string.Empty) I@(name).@(navProperty.Name.AsPascaleCase())
+		{
+			get => @(navProperty.Name.AsPascaleCase()) as ICollection<I@(navProperty.Type.GetCSharpType())@((navProperty.Nullable) ? "?" : string.Empty)> ?? [];
+			set => @(navProperty.Name.AsPascaleCase()) = value as ICollection<@(navProperty.Type.GetCSharpType())@((navProperty.Nullable) ? "?" : string.Empty)> ?? [];
+		}
+</text>
+	}
+}
+if(isUser)
+{
+<text>
+		ICollection<IUser_Group> IUser.UserGroups
+        {
+            get => UserGroups as ICollection<IUser_Group> ?? [];
+            set => UserGroups = value as ICollection<User_Group> ?? [];
+        }
+
+        ICollection<ILog> IUser.Logs
+        {
+            get => Logs as ICollection<ILog> ?? [];
+            set => Logs = value as ICollection<Log> ?? [];
+        }
+
+        ICollection<IUser_Role> IUser.UserRoles
+        {
+            get => UserRoles as ICollection<IUser_Role> ?? [];
+            set => UserRoles = value as ICollection<User_Role> ?? [];
+        }
+</text>
+}
+}
+		#endregion
+	}
+}

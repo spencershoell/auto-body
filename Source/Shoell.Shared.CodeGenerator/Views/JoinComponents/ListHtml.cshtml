@@ -1,0 +1,70 @@
+﻿@model EntityType;
+@{
+    Layout = null;
+    var model1 = Model.NavigationProperties.First().Name;
+    var model2 = Model.NavigationProperties.Skip(1).First().Name;
+
+    var modelType1 = Model.NavigationProperties.First().Type;
+    var modelType2 = Model.NavigationProperties.Skip(1).First().Type;
+}
+<dx-data-grid height="100%" [allowColumnReordering]="true" [allowColumnResizing]="true" [columnAutoWidth]="true"
+  [columnMinWidth]="150" [columnHidingEnabled]="true" [dataSource]="dataSource" [remoteOperations]="true"
+  [rowAlternationEnabled]="true" [showBorders]="true" [showColumnLines]="false" [showRowLines]="true"
+  [wordWrapEnabled]="true" [showColumnHeaders]="true">
+  <dxo-column-chooser [enabled]="true" mode="select"></dxo-column-chooser>
+  <dxo-editing mode="batch" refreshMode="full" [allowDeleting]="canModify">
+  </dxo-editing>
+  <dxo-filter-panel [visible]="false"></dxo-filter-panel>
+  <dxo-filter-row [visible]="false"></dxo-filter-row>
+  <dxo-group-panel [visible]="false"></dxo-group-panel>
+  <dxo-grouping #expand [autoExpandAll]="true" [contextMenuEnabled]="false"></dxo-grouping>
+  <dxo-header-filter [visible]="false"></dxo-header-filter>
+  <dxo-keyboard-navigation enterKeyAction="startEdit" enterKeyDirection="row" [editOnKeyPress]="true">
+  </dxo-keyboard-navigation>
+  <dxo-paging [enabled]="true" [pageSize]="100"></dxo-paging>
+  <dxo-scrolling mode="virtual" rowRenderingMode="virtual" [preloadEnabled]="true"></dxo-scrolling>
+  <dxo-search-panel [visible]="true" [searchVisibleColumnsOnly]="true"></dxo-search-panel>
+  <dxo-toolbar>
+    <dxi-item location="before" name="groupPanel" locateInMenu="auto"></dxi-item>
+    <dxi-item *ngIf="canModify" location="before" locateInMenu="auto" [visible]="canModify">
+      <div *dxTemplate>
+        <dx-button stylingMode="contained" type="success" [icon]="fasLink" text="Link" (onClick)="link()">
+        </dx-button>
+      </div>
+    </dxi-item>
+    <dxi-item *ngIf="canCreate@(model1.AsPascaleCase())" location="before" locateInMenu="auto" [visible]="canModify">
+      <div *dxTemplate>
+        <dx-button stylingMode="contained" type="default" [icon]="fasPlus" text="Add @(model1.AsPascaleCase())" (onClick)="create@(model1.AsPascaleCase())()">
+        </dx-button>
+      </div>
+    </dxi-item>
+    <dxi-item *ngIf="canCreate@(model2.AsPascaleCase())" location="before" locateInMenu="auto" [visible]="canModify">
+      <div *dxTemplate>
+        <dx-button stylingMode="contained" type="default" [icon]="fasPlus" text="Add @(model2.AsPascaleCase())" (onClick)="create@(model2.AsPascaleCase())()">
+        </dx-button>
+      </div>
+    </dxi-item>
+    <dxi-item location="after" locateInMenu="auto" showText="inMenu" widget="dxButton"
+      [options]="{ text: 'Refresh', icon: falRefresh, onClick: refresh }"></dxi-item>
+    <dxi-item [visible]="canModify" name="saveButton" locateInMenu="auto"></dxi-item>
+    <dxi-item [visible]="canModify" name="revertButton"></dxi-item>
+    <dxi-item name="columnChooserButton" locateInMenu="auto"></dxi-item>
+    <dxi-item name="searchPanel" locateInMenu="auto"></dxi-item>
+  </dxo-toolbar>
+  <dxi-column dataField="@(model1.AsCamelCase()).name" caption="Name" cellTemplate="@(model1.AsCamelCase())NameTemplate" [hidingPriority]="89"
+    [visible]="show@(model1.AsPascaleCase())" [allowEditing]="false">
+    <div *dxTemplate="let item of '@(model1.AsCamelCase())NameTemplate'">
+      <a *ngIf="item.data.@(model1.AsCamelCase())Id" [routerLink]="['/@(model1.AsCamelCase())', item.data.@(model1.AsCamelCase())Id?._value]">{{item.value}}</a>
+    </div>
+  </dxi-column>
+  <dxi-column dataField="@(model1.AsCamelCase()).description" [hidingPriority]="86" caption="Description" [allowEditing]="false"
+    [visible]="show@(model1.AsPascaleCase())"></dxi-column>
+  <dxi-column dataField="@(model2.AsCamelCase()).name" [hidingPriority]="91" caption="Name" cellTemplate="@(model2.AsCamelCase())NameTemplate"
+    [visible]="show@(model2.AsPascaleCase())" [allowEditing]="false">
+    <div *dxTemplate="let item of '@(model2.AsCamelCase())NameTemplate'">
+      <a *ngIf="item.data.@(model2.AsCamelCase())Id" [routerLink]="['/@(model2.AsCamelCase())', item.data.@(model2.AsCamelCase())Id?._value]">{{item.value}}</a>
+    </div>
+  </dxi-column>
+  <dxi-column dataField="@(model2.AsCamelCase()).description" [hidingPriority]="86" caption="Description" [allowEditing]="false"
+    [visible]="show@(model2.AsPascaleCase())"></dxi-column>
+</dx-data-grid>

@@ -1,0 +1,150 @@
+﻿@model EntityType;
+@{
+    Layout = null;
+    var companyName = Model.Config.CompanyName.AsPascaleCase();
+    var projectName = Model.Config.ProjectName.AsPascaleCase();
+    var ns = (Model.Namespace == string.Empty) ? string.Empty : $".{Model.Namespace}";
+    var name = Model.Name.AsPascaleCase();
+
+    var hasBaseType = !string.IsNullOrEmpty(Model.BaseType);
+    var baseType = Model.BaseType;
+
+    var isJoinType = Model.Keys.Count() > 1;
+
+    var key1 = Model.Keys.FirstOrDefault()?.Name ?? string.Empty;
+    var key2 = Model.Keys.LastOrDefault()?.Name ?? string.Empty;
+
+    var keyName1 = key1.Replace("Id", string.Empty);
+    var keyName2 = key2.Replace("Id", string.Empty);
+
+    var keyType1 = Model.Keys.FirstOrDefault()?.Type ?? string.Empty;
+    var keyType2 = Model.Keys.LastOrDefault()?.Type ?? string.Empty;
+}
+using @(Model.Config.CompanyName).@(Model.Config.ProjectName).Data@(ns);
+using @(Model.Config.CompanyName).@(Model.Config.ProjectName).Identity@(ns);
+using @(Model.Config.CompanyName).@(Model.Config.ProjectName).Models@(ns);
+@if (isJoinType)
+{
+<text>using @(companyName).@(projectName).Services.@(name)DtoModels;
+using System.Linq.Expressions;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Formatter;
+using Microsoft.AspNetCore.OData.Query;
+using Microsoft.Identity.Web.Resource;
+</text>
+}
+
+namespace @(companyName).@(projectName).Services
+{
+    public class @(name.AsPlural())Controller(@(name)Repository repository) : @if (hasBaseType) 
+{
+<text>@(baseType)Controller<@(name)></text>
+} else if (isJoinType) 
+{
+<text>IntersectController<@(name)></text>
+} 
+else 
+{
+<text>CoreController<@(name)></text>
+}
+    {
+        protected override @(name)Repository Repository => repository;@if (isJoinType) 
+{
+<text>
+
+        protected override @Html.Raw($"Expression<Func<{name}, bool>>") IdentifierPredicate(Guid @(key1.AsCamelCase()), Guid @(key2.AsCamelCase()))
+        {
+            return e => e.@(key1.AsPascaleCase()) == @(key1.AsCamelCase()) && e.@(key2.AsPascaleCase()) == @(key2.AsCamelCase());
+        }</text>
+}
+
+
+@if (isJoinType) 
+{
+<text>        protected override string[] ReadScopes => [@(keyType1.AsPascaleCase())Roles.Read, @(keyType2.AsPascaleCase())Roles.Read];</text>
+} 
+else 
+{
+<text>        protected override string[] ReadScopes => [@(name)Roles.Read];</text>
+}
+@if (hasBaseType)
+{
+<text>    
+        protected override string[] ModifyScopes => [@(name)Roles.Modify];
+        protected override string[] RecycleScopes => [@(name)Roles.Recycle];
+        protected override string[] ArchiveScopes => [@(name)Roles.Archive];</text>
+} else if(isJoinType)
+{
+<text>
+        protected override string[] ModifyScopes => [@(keyType1.AsPascaleCase())Roles.Modify, @(keyType2.AsPascaleCase())Roles.Modify];
+
+        // GET: odata/@(name.AsPlural())(@(key1.AsCamelCase())=[@(key1.AsPascaleCase())],@(key2.AsCamelCase())=[@(key2.AsPascaleCase())])
+        [HttpGet]
+        [EnableQuery]
+        public override IActionResult Get([FromODataUri] Guid key@(key1.AsCamelCase()), [FromODataUri] Guid key@(key2.AsCamelCase()), CancellationToken cancellationToken = default)
+        {
+            return base.Get(key@(key1.AsCamelCase()), key@(key2.AsCamelCase()), cancellationToken);
+        }
+
+        // DELETE: odata/@(name.AsPlural())(@(key1.AsCamelCase())=[@(key1.AsPascaleCase())],@(key2.AsCamelCase())=[@(key2.AsPascaleCase())])
+        [HttpDelete]
+        public override async Task<IActionResult> Delete([FromODataUri] Guid key@(key1.AsCamelCase()), [FromODataUri] Guid key@(key2.AsCamelCase()), CancellationToken cancellationToken = default)
+        {
+            return await base.Delete(key@(key1.AsCamelCase()), key@(key2.AsCamelCase()), cancellationToken);
+        }
+
+        // POST: odata/@(name.AsPlural())/AddTo@(keyName2.AsPascaleCase().AsPlural())
+        [HttpPost]
+        public async Task<IActionResult> AddTo@(keyName2.AsPascaleCase().AsPlural())(ODataActionParameters parameters, CancellationToken cancellationToken = default)
+        {
+            if (User == null || User.Identity == null || !User.Identity.IsAuthenticated)
+                return Unauthorized();
+
+            HttpContext.VerifyUserHasAnyAcceptedScope(ModifyScopes);
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            try
+            {
+                var model = (Add@(keyName1.AsPascaleCase())To@(keyName2.AsPascaleCase().AsPlural())Dto)parameters.FirstOrDefault(e => e.Key == "model").Value;
+
+                await Repository.Add@(keyName1.AsPascaleCase())To@(keyName2.AsPascaleCase().AsPlural())(model.@(key1.AsPascaleCase()), model.@(key2.AsPascaleCase().AsPlural()), cancellationToken);
+                await Repository.CommitAsync(cancellationToken);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return ReturnODataErrorResult(ex);
+            }
+        }
+
+        // POST: odata/@(name.AsPlural())/AddTo@(keyName1.AsPascaleCase().AsPlural())
+        [HttpPost]
+        public async Task<IActionResult> AddTo@(keyName1.AsPascaleCase().AsPlural())(ODataActionParameters parameters, CancellationToken cancellationToken = default)
+        {
+            if (User == null || User.Identity == null || !User.Identity.IsAuthenticated)
+                return Unauthorized();
+
+            HttpContext.VerifyUserHasAnyAcceptedScope(ModifyScopes);
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                var model = (Add@(keyName2.AsPascaleCase())To@(keyName1.AsPascaleCase().AsPlural())Dto)parameters.FirstOrDefault(e => e.Key == "model").Value;
+
+                await Repository.Add@(keyName2.AsPascaleCase())To@(keyName1.AsPascaleCase().AsPlural())(model.@(key2.AsPascaleCase()), model.@(key1.AsPascaleCase().AsPlural()), cancellationToken);
+                await Repository.CommitAsync(cancellationToken);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return ReturnODataErrorResult(ex);
+            }
+        }
+</text>
+}
+
+    }
+}

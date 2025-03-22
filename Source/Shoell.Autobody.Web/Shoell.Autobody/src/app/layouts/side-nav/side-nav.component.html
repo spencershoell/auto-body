@@ -1,0 +1,15 @@
+<sh-header class="layout-header" [menuToggleEnabled]="true" (menuToggle)="menuOpened = !menuOpened;" [title]="title">
+</sh-header>
+
+<dx-drawer class="layout-body" position="before" [closeOnOutsideClick]="shaderEnabled" [openedStateMode]="menuMode"
+  [revealMode]="menuRevealMode" [minSize]="minMenuSize" [shading]="shaderEnabled" [(opened)]="menuOpened">
+
+  <sh-side-navigation-menu [compactMode]="!menuOpened" [selectedItem]="selectedRoute" [ngClass]="swatchClassName"
+    *dxTemplate="let dataMenu of 'panel'" (selectedItemChanged)="navigationChanged($event)"
+    (openMenu)="navigationClick()">
+  </sh-side-navigation-menu>
+
+  <div class="content">
+    <ng-content></ng-content>
+  </div>
+</dx-drawer>

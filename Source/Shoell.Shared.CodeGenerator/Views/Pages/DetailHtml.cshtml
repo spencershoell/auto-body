@@ -1,0 +1,19 @@
+﻿@model EntityType;
+@{
+    Layout = null;
+}
+<div class="detail-page view-wrapper">
+    <div class="header-wrapper">
+        <div class="breadcrumbs">
+            <div class="breadcrumb-item"><a [routerLink]="['/']">@(string.IsNullOrEmpty(Model.Namespace) ? "Home" : Model.Namespace.AsSpacedPascaleCase())</a></div>
+            <div class="breadcrumb-item"><a [routerLink]="['/@Model.Name.AsDashedLowerCase()']">@(Model.Name.AsSpacedPascaleCase().AsPlural())</a></div>
+            <div class="breadcrumb-item active" *ngIf="model">{{model.name}}</div>
+            <div class="breadcrumb-item" *ngIf="!model">
+                <dx-load-indicator [height]="12" [width]="12"></dx-load-indicator>
+            </div>
+        </div>
+    </div>
+    <div class="body-wrapper">
+        <@(Model.Config.AppPrefix)-@(Model.Name.AsDashedLowerCase())-detail [id]="id"></@(Model.Config.AppPrefix)-@(Model.Name.AsDashedLowerCase())-detail>
+    </div>
+</div>

@@ -1,0 +1,20 @@
+﻿@model List<EntityType>;
+@{
+    Layout = null;
+    var namespaces = Model.GroupBy(e => e.Namespace);
+}
+export * from './_core';
+export * from './_identity';
+export * from './_interfaces';
+export * from './_system';
+@foreach(var ns in namespaces)
+{
+<text>
+// @(ns.Key)
+</text>
+    @foreach(var type in ns)
+    {
+<text>export * from './@((string.IsNullOrEmpty(ns.Key) ? "" : $"{ns.Key}/"))@(type.Name.AsDashedLowerCase()).model';
+</text>
+    }
+}

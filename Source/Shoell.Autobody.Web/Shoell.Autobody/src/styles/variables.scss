@@ -1,0 +1,482 @@
+@use "variables.base.scss" as light;
+@use "variables.base.dark.scss" as dark;
+
+:root {
+  --content-padding: 12px;
+  --navigation-height: 36px;
+  --content-height: calc(100vh - var(--navigation-height));
+  --breadcrumb-padding: calc(var(--content-padding) / 2) 0;
+  --breadcrumb-height: calc(18px + var(--content-padding));
+
+  --border-radius: 8px;
+  --border-size: 1px;
+
+  .dx-swatch-light,
+  .dx-swatch-additional {
+    --main-bg: #fafafa;
+    --overlay: #1f1f1f;
+    --base-text-color: #{light.$base-text-color};
+    --base-border-color: #{light.$base-border-color};
+    --base-bg: #{light.$base-bg};
+    --base-accent: #{light.$base-accent};
+
+    --shadow-color-first: rgba(0, 0, 0, 0.132);
+    --shadow-color-second: rgba(0, 0, 0, 0.108);
+  }
+
+  .dx-swatch-dark,
+  .dx-swatch-additional-dark {
+    --main-bg: #1f1f1f;
+    --overlay: #c3c3c3;
+    --base-text-color: #{dark.$base-text-color};
+    --base-border-color: #{dark.$base-border-color};
+    --base-bg: #{dark.$base-bg};
+    --base-accent: #{dark.$base-accent};
+
+    --shadow-color-first: rgba(0, 0, 0, 0.528);
+    --shadow-color-second: rgba(0, 0, 0, 0.432);
+  }
+}
+
+@mixin toolbar-panel() {
+  background-color: var(--base-bg);
+  padding: var(--content-padding);
+  border-radius: 8px;
+  @include depth-8();
+  border: 1px solid var(--base-border-color);
+}
+
+@mixin list-page {
+  .list-page.view-wrapper {
+    height: var(--content-height);
+
+    .header-wrapper {
+      position: relative;
+      margin-left: var(--content-padding);
+    }
+
+    .body-wrapper {
+      position: relative;
+      height: calc(100% - var(--breadcrumb-height));
+    }
+  }
+}
+
+@mixin detail-page {
+  .detail-page.view-wrapper {
+    height: var(--content-height);
+
+    .header-wrapper {
+      position: relative;
+      margin-left: var(--content-padding);
+    }
+
+    .body-wrapper {
+      position: relative;
+      height: calc(100% - var(--breadcrumb-height));
+    }
+  }
+}
+
+@mixin link-component {
+  .link-body {
+    display: block;
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+
+    ::ng-deep .dx-datagrid {
+      height: 100%;
+      padding: var(--content-padding);
+
+      .dx-toolbar {
+        @include toolbar-panel();
+
+        &.dx-widget,
+        .dx-datagrid .dx-toolbar {
+          margin-bottom: var(--content-padding);
+        }
+      }
+
+      .dx-datagrid-header-panel {
+        padding: 0;
+        background-color: var(--main-bg);
+      }
+
+      .dx-toolbar {
+        margin-bottom: 0;
+        padding: (var(--content-padding));
+      }
+
+      .dx-datagrid-content .dx-row {
+        cursor: pointer;
+      }
+
+      .grid-header {
+        font-size: 22px;
+        font-weight: 500;
+        padding-right: var(--content-padding);
+      }
+
+      .dx-datagrid-headers.dx-bordered-top-view {
+        border-radius: 8px 8px 0 0;
+        @include depth-4();
+      }
+
+      &.dx-gridbase-container {
+        >.dx-bordered-bottom-view {
+          border-radius: 0 0 8px 8px;
+          @include depth-4();
+        }
+      }
+    }
+  }
+}
+
+@mixin list-component {
+  :host {
+    ::ng-deep .dx-datagrid {
+      height: 100%;
+      padding: 0 var(--content-padding) var(--content-padding) var(--content-padding);
+
+      .dx-toolbar {
+        @include toolbar-panel();
+
+        &.dx-widget,
+        .dx-datagrid .dx-toolbar {
+          margin-bottom: var(--content-padding);
+        }
+      }
+
+      .dx-datagrid-header-panel {
+        padding: 0;
+        background-color: var(--main-bg);
+      }
+
+      .dx-toolbar {
+        margin-bottom: 0;
+        padding: (var(--content-padding));
+      }
+
+      .dx-datagrid-content .dx-row {
+        cursor: pointer;
+      }
+
+      .grid-header {
+        font-size: 18px;
+        font-weight: 500;
+        padding-right: var(--content-padding);
+      }
+
+      .dx-datagrid-headers.dx-bordered-top-view {
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
+        @include depth-4();
+      }
+
+      &.dx-gridbase-container {
+        >.dx-bordered-bottom-view {
+          border-radius: 0 0 var(--border-radius) var(--border-radius);
+          @include depth-4();
+        }
+      }
+    }
+  }
+}
+
+@mixin create-component {
+  :host {
+    --create-toolbar-height: #{calc(var(--navigation-height) + (var(--border-size) * 2) + (var(--content-padding) * 2))};
+
+    display: block;
+    position: relative;
+    height: 100%;
+
+    .dx-toolbar.dx-widget {
+      @include toolbar-panel();
+    }
+
+    .create-header {
+      .dx-toolbar.dx-widget {
+        @include toolbar-panel();
+      }
+
+      padding: 0 var(--content-padding);
+    }
+
+    .create-body {
+      height: calc(100% - var(--create-toolbar-height));
+      position: relative;
+      padding: var(--content-padding);
+
+      .card {
+        height: 100%;
+      }
+    }
+  }
+
+  .create-load-indicator-wrapper {
+    display: block;
+    position: relative;
+    height: 100%;
+    width: 100%;
+
+    .create-load-indicator {
+      position: absolute;
+      top: calc(50% - 25px);
+      left: calc(50% - 25px);
+    }
+  }
+}
+
+@mixin edit-component {
+  :host {
+    --edit-header-height: #{calc(var(--navigation-height) + (var(--border-size) * 2) + (var(--content-padding) * 2))};
+
+    display: block;
+    position: relative;
+    height: 100%;
+
+    .edit-header {
+      .dx-toolbar.dx-widget {
+        @include toolbar-panel();
+      }
+
+      padding: 0 var(--content-padding);
+    }
+
+    .edit-body {
+      height: calc(100% - var(--edit-header-height));
+      position: relative;
+      padding: var(--content-padding);
+
+      .card {
+        height: 100%;
+      }
+    }
+  }
+
+  .edit-load-indicator-wrapper {
+    display: block;
+    position: relative;
+    height: 100%;
+    width: 100%;
+
+    .edit-load-indicator {
+      position: absolute;
+      top: calc(50% - 25px);
+      left: calc(50% - 25px);
+    }
+  }
+}
+
+@mixin detail-component {
+  :host {
+    --detail-header-height: #{calc(var(--navigation-height) + (var(--border-size) * 2) + (var(--content-padding) * 2))};
+
+    display: block;
+    position: relative;
+    height: 100%;
+
+    .detail-header {
+      .dx-toolbar.dx-widget {
+        @include toolbar-panel();
+      }
+
+      padding: 0 var(--content-padding);
+    }
+
+    .detail-body {
+      position: relative;
+      height: calc(100% - var(--detail-header-height));
+      padding-top: var(--content-padding);
+
+      .detail-tabs {
+        padding-right: var(--content-padding);
+
+        ::ng-deep .dx-tabpanel {
+          height: 100%;
+
+          .dx-tabpanel-tabs {
+            background-color: var(--base-bg);
+            margin-bottom: var(--content-padding);
+            border-radius: 8px;
+            border: 1px solid var(--base-border-color);
+            @include depth-8();
+
+            .dx-tabs {
+              border-bottom: none !important;
+            }
+          }
+
+          .dx-tabpanel-container {
+            margin-left: calc(-1 * var(--content-padding));
+            margin-right: calc(-1 * var(--content-padding));
+          }
+        }
+
+        &.detail-tabs-small {
+          padding-left: var(--content-padding);
+        }
+      }
+    }
+
+    .detail-load-indicator-wrapper {
+      display: block;
+      position: relative;
+      height: 100%;
+      width: 100%;
+
+      .detail-load-indicator {
+        position: absolute;
+        top: calc(50% - 25px);
+        left: calc(50% - 25px);
+      }
+    }
+  }
+}
+
+@mixin select-component {
+  ::ng-deep .dx-dropdowneditor-overlay.dx-popup-wrapper {
+    .dx-overlay-content {
+      background-color: var(--main-bg);
+      @include depth-8();
+
+      .dx-popup-content {
+        padding: var(--content-padding);
+      }
+    }
+  }
+
+  ::ng-deep ::ng-deep .dx-datagrid {
+    height: 100%;
+
+    .dx-toolbar {
+      @include toolbar-panel();
+
+      &.dx-widget,
+      .dx-datagrid .dx-toolbar {
+        margin-bottom: var(--content-padding);
+      }
+    }
+
+    .dx-datagrid-header-panel {
+      padding: 0;
+      background-color: var(--main-bg);
+    }
+
+    .dx-toolbar {
+      margin-bottom: 0;
+      padding: (var(--content-padding));
+    }
+
+    .dx-datagrid-content .dx-row {
+      cursor: pointer;
+    }
+
+    .grid-header {
+      font-size: 22px;
+      font-weight: 500;
+      padding-right: var(--content-padding);
+    }
+
+    .dx-datagrid-headers.dx-bordered-top-view {
+      border-radius: 8px 8px 0 0;
+      @include depth-4();
+    }
+
+    &.dx-gridbase-container {
+      >.dx-bordered-bottom-view {
+        border-radius: 0 0 8px 8px;
+        @include depth-4();
+      }
+    }
+  }
+}
+
+@mixin slide-component {
+  .slide-panel-wrapper {
+    --slide-panel-header-height: #{calc(var(--navigation-height) + (var(--border-size) * 2) + (var(--content-padding) * 2))};
+
+    display: block;
+    position: relative;
+    height: 100%;
+
+    .slide-panel-header {
+      .dx-toolbar.dx-widget {
+        @include toolbar-panel();
+        @include depth-4();
+      }
+
+      padding: 0 var(--content-padding);
+
+      h6 {
+        padding: 0;
+        margin: 0;
+        text-transform: uppercase;
+        font-size: 8px;
+        font-weight: bold;
+      }
+
+      h3 {
+        padding: 0;
+        margin: 0;
+        font-size: 18px;
+      }
+    }
+
+    .slide-panel-body {
+      height: calc(100% - var(--slide-panel-header-height));
+      position: relative;
+      background-color: var(--base-bg-theme-adjust);
+      padding-top: var(--content-padding);
+
+      ::ng-deep .dx-tabpanel {
+        height: 100%;
+
+        .dx-tabpanel-tabs {
+          background-color: var(--base-bg);
+
+          margin: var(--content-padding);
+          margin-top: 0;
+
+          border-radius: 8px;
+          border: 1px solid var(--base-border-color);
+          @include depth-8();
+
+          .dx-tabs {
+            border-bottom: none !important;
+          }
+        }
+      }
+    }
+  }
+
+  .slide-load-indicator-wrapper {
+    display: block;
+    position: relative;
+    height: 100%;
+    width: 100%;
+
+    .slide-load-indicator {
+      position: absolute;
+      top: calc(50% - 25px);
+      left: calc(50% - 25px);
+    }
+  }
+}
+
+@mixin depth-4 {
+  box-shadow: 0px 1.6px 3.6px var(--shadow-color-first), 0px 0.3px 0.9px var(--shadow-color-second);
+}
+
+@mixin depth-8 {
+  box-shadow: 0px 3.2px 7.2px var(--shadow-color-first), 0px 0.6px 1.8px var(--shadow-color-second);
+}
+
+@mixin depth-16 {
+  box-shadow: 0px 6.4px 14.4px var(--shadow-color-first), 0px 1.2px 3.6px var(--shadow-color-second);
+}
+
+@mixin depth-64 {
+  box-shadow: 0px 25.6px 57.6px var(--shadow-color-first), 0px 4.8px 14.4px var(--shadow-color-second);
+}

@@ -1,0 +1,147 @@
+﻿@model EntityType;
+@{
+    Layout = null;
+    var model1 = Model.Name.Split('_').First().AsPascaleCase();
+    var model2 = Model.Name.Split('_').Last().AsPascaleCase();
+}
+import { HttpClient @if (Model.Keys.Count > 1) { <text>, HttpErrorResponse </text> }} from "@@angular/common/http";
+import { Injectable } from "@@angular/core";
+import { plainToInstance } from "class-transformer";
+import Guid from "devextreme/core/guid";
+import { @if (Model.Keys.Count > 0) { <text>Common, </text> }DataFieldTypes, EntityEndpoint } from "src/app/classes";
+import { @(Model.Name.AsPascaleCase()), @(Model.Name.AsPascaleCase())ODataStore } from 'src/app/data/models';
+import { DataEventService } from "src/app/shared/services";
+import { environment } from "src/environments/environment";
+@{
+if(Model.Keys.Count > 1)
+{
+    <text>import { catchError, lastValueFrom, of } from "rxjs";</text>
+}
+else
+{
+    <text>import { CoreStore } from "..";</text>
+}
+}
+import ODataStore from "devextreme/data/odata/store";
+
+const url: string = `${environment.settings.resources.api.endpoint}${EntityEndpoint.@(Model.Name.AsPascaleCase())}`;
+
+@@Injectable({
+    providedIn: 'root'
+})
+export class @(Model.Name.AsPascaleCase())Store extends @{
+    if(Model.Keys.Count > 1)
+    {
+        <text>ODataStore<@(Model.Name.AsPascaleCase()), [Guid, Guid]></text>
+    } 
+    else
+    {
+        <text>CoreStore<@(Model.Name.AsPascaleCase()), Guid></text>
+    }
+} {
+@if (!(Model.Keys.Count > 1))
+{
+<text>    override url = url;
+    override recycle: ODataStore<@(Model.Name.AsPascaleCase()), Guid>;
+</text>
+}
+
+    constructor(
+        @(Model.Keys.Count > 1 ? "protected" : "override") dataEventService: DataEventService,
+        @(Model.Keys.Count > 1 ? "protected" : "override") http: HttpClient
+    ) {
+        let config = {
+            url: url,
+            errorHandler: (error: any) => {
+                console.error(error);
+            },
+            version: 4,
+            key: @Html.Raw( Model.Keys.Count > 1 ? $"['{model1.AsCamelCase()}Id', '{model2.AsCamelCase()}Id']" : "'id'" ),
+            keyType: @{
+            if(Model.Keys.Count > 1) 
+            {
+                <text>{
+                @foreach(var key in Model.Keys)
+                {
+<text>                @key.Name.AsCamelCase(): DataFieldTypes.Guid,
+</text>
+                }            }</text>
+            }
+            else 
+            {
+                <text>DataFieldTypes.Guid</text>
+            }
+            },
+            fieldTypes: @(Model.Name.AsPascaleCase())ODataStore.getFieldTypes(),
+            onLoaded: (data: any[]) => {
+                for (let i = 0; i < data.length; i++) {
+                    data[i] = @($"plainToInstance({Model.Name.AsPascaleCase()}"), data[i]);
+                }
+            },
+            onModified: () => {
+                dataEventService.inform@(Model.Name.AsPascaleCase().AsPlural())Changed();
+            },
+            onUpdating: (key: any, values: any) => {
+@foreach(var nav in Model.NavigationProperties)
+{
+<text>                delete values.@(nav.Name.AsCamelCase());
+</text>
+}
+            }
+        };
+        super(config);@{
+        if(!(Model.Keys.Count > 1)) {
+<text>
+        config.url = `${url}/Recycle`;
+        this.recycle = new ODataStore(config);
+
+        this.archive = this.archive.bind(this);</text>
+        }
+}
+
+    }
+@{
+    if(Model.Keys.Count > 1)
+    {
+<text>
+    async addTo@(model1.AsPascaleCase().AsPlural())(@(model2.AsCamelCase())Id: Guid, @(model1.AsCamelCase())Ids: Guid[]): Promise<void> {
+        await lastValueFrom(this.http
+            .post(`${url}/AddTo@(model1.AsPascaleCase().AsPlural())`, { model: { @(model2.AsCamelCase())Id: @(model2.AsCamelCase())Id, @(model1.AsCamelCase())Ids: @(model1.AsCamelCase())Ids } }, {})
+            .pipe(
+                catchError(error => {
+                    if (error instanceof HttpErrorResponse) {
+                        Common.toastError(Common.getServerErrorMessage(error.error));
+                    } else {
+                        Common.toastError(Common.getServerErrorMessage(error.message));
+                    }
+                    return of();
+                })
+            ));
+    }
+
+    async addTo@(model2.AsPascaleCase().AsPlural())(@(model1.AsCamelCase())Id: Guid, @(model2.AsCamelCase())Ids: Guid[]): Promise<void> {
+        await lastValueFrom(this.http
+            .post(`${url}/AddTo@(model2.AsPascaleCase().AsPlural())`, { model: { @(model1.AsCamelCase())Id: @(model1.AsCamelCase())Id, @(model2.AsCamelCase())Ids: @(model2.AsCamelCase())Ids } }, {})
+            .pipe(
+                catchError(error => {
+                    if (error instanceof HttpErrorResponse) {
+                        Common.toastError(Common.getServerErrorMessage(error.error));
+                    } else {
+                        Common.toastError(Common.getServerErrorMessage(error.message));
+                    }
+                    return of();
+                })
+            ));
+    }
+</text>
+    }
+    else
+    {
+<text>
+    protected override informChanged(): void {
+        this.dataEventService.inform@(Model.Name.AsPascaleCase().AsPlural())Changed();
+    }
+</text>
+    }
+} 
+}

@@ -1,0 +1,61 @@
+<ng-container *ngIf="model">
+    <div class="detail-header">
+        <dx-toolbar>
+            <dxi-item location="before">
+                <dx-button [icon]="falArrowLeft" stylingMode="text" hint="Go Back" (click)="goBack()"></dx-button>
+            </dxi-item>
+            <dxi-item location="before" [text]="model.name"></dxi-item>
+            <dxi-item location="after">
+                <dx-button [icon]="falRefresh" stylingMode="text" hint="Refresh" (click)="refresh()"></dx-button>
+            </dxi-item>
+        </dx-toolbar>
+    </div>
+    <div class="detail-body">
+        <dx-responsive-box singleColumnScreen="sm">
+            <dxi-row [ratio]="1"></dxi-row>
+
+            <dxi-col [ratio]="5" screen="lg"></dxi-col>
+            <dxi-col [ratio]="9" screen="lg"></dxi-col>
+
+            <dxi-col [ratio]="5" screen="md"></dxi-col>
+            <dxi-col [ratio]="9" screen="md"></dxi-col>
+
+            <dxi-col [ratio]="1" screen="sm"></dxi-col>
+
+            <dxi-col [ratio]="1" screen="xs"></dxi-col>
+
+            <dxi-item class="detail-edit">
+                <dxi-location [row]="0" [col]="0" screen="lg"></dxi-location>
+                <dxi-location [row]="0" [col]="0" screen="md"></dxi-location>
+
+                <sh-user-edit [id]="id"></sh-user-edit>
+            </dxi-item>
+            <dxi-item class="detail-tabs" [ngClass]="{'detail-tabs-small': isSmallScreen}">
+                <dxi-location [row]="0" [col]="1" screen="lg"></dxi-location>
+                <dxi-location [row]="0" [col]="1" screen="md"></dxi-location>
+
+                <dxi-location [row]="0" [col]="0" screen="sm"></dxi-location>
+                <dxi-location [row]="0" [col]="0" screen="xs"></dxi-location>
+
+                <dx-tab-panel height="100%" [loop]="false" [animationEnabled]="true" [swipeEnabled]="false" [items]="[
+                    { title: 'Details', template: 'detailsTemplate', visible: isSmallScreen },
+                    { title: 'Groups', template: 'groupsTemplate'},
+                    { title: 'Logs', template: 'logsTemplate' }
+                ]">
+                    <div *dxTemplate="let template of 'detailsTemplate'">
+                        <sh-user-edit [id]="id"></sh-user-edit>
+                    </div>
+                    <div *dxTemplate="let template of 'groupsTemplate'">
+                        <sh-user-group-list [userId]="id"></sh-user-group-list>
+                    </div>
+                    <div *dxTemplate="let template of 'logsTemplate'">
+                        <sh-log-list [store]="logStore" [showTitle]="false"></sh-log-list>
+                    </div>
+                </dx-tab-panel>
+            </dxi-item>
+        </dx-responsive-box>
+    </div>
+</ng-container>
+<div *ngIf="!model" class="detail-load-indicator-wrapper">
+    <dx-load-indicator class="detail-load-indicator" [height]="50" [width]="50"></dx-load-indicator>
+</div>

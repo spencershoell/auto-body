@@ -1,0 +1,106 @@
+﻿@model EntityType;
+@{
+    Layout = null;
+}
+import { Component@{ if (Model.NavigationProperties.Count > 0) { <text>, Input</text> } }, SimpleChanges } from "@@angular/core";
+import { DxLoadIndicatorModule, DxTabPanelModule, DxToolbarModule } from "devextreme-angular";
+import { @(Model.Name.AsPascaleCase()) } from "src/app/data/models";
+import { BaseSlideComponent } from "src/app/shared/components";
+import { @(Model.Name.AsPascaleCase())EditComponent } from "./edit.component";
+import { SlidePanelService } from "src/app/layouts";
+import { AuthorizationService, DataEventService } from "src/app/shared/services";
+import { takeUntil } from "rxjs";
+import { EntityType } from "src/app/classes";
+import { NgIf } from "@@angular/common";
+import ODataStore from "devextreme/data/odata/store";
+import { Context } from "src/app/data";
+import { LogListComponent } from "src/app/shared/components/_system/logs/list.component";
+@{
+    foreach (var navPropertyTypeName in Model.NavigationProperties
+        .Where(e => e.IsCollection && e.Type != Model.Name)
+        .OrderBy(e => e.Name)
+        .Select(e => e.Type)
+        .Distinct()
+    )
+    {
+        var typeNamespace = Model.NavigationProperties.FirstOrDefault(e => e.Type == navPropertyTypeName)?.TypeNamespace ?? string.Empty;
+<text>import { @(navPropertyTypeName.AsPascaleCase())ListComponent } from 'src/app/shared/components/@{ if(!string.IsNullOrEmpty(typeNamespace)) { <text>@(typeNamespace)/</text> } }@(navPropertyTypeName.AsDashedLowerCase())/list.component';
+</text>
+    }
+    if (Model.NavigationProperties.Count > 0) 
+    { 
+<text>import { Guid } from "devextreme/common";
+</text> 
+    } 
+}
+@@Component({
+    selector: '@(Model.Config.AppPrefix)-@(Model.Name?.AsDashedLowerCase())-slide',
+    templateUrl: 'slide.component.html',
+    styleUrls: ['slide.component.scss'],
+    standalone: true,
+    imports: [
+        NgIf, DxLoadIndicatorModule, DxTabPanelModule, DxToolbarModule,
+        @(Model.Name?.AsPascaleCase())EditComponent, @foreach(var navProperty in Model.NavigationProperties.Where(e => e.IsCollection && e.Type != Model.Name).OrderBy(e => e.Name)) 
+        { 
+            <text>@(navProperty.Type.AsPascaleCase())ListComponent, </text>
+        }LogListComponent
+    ]
+})
+export class @(Model.Name?.AsPascaleCase())SlideComponent extends BaseSlideComponent<@(Model.Name)> {
+    override entityName: string = "@(Model.Name?.AsSpacedPascaleCase())";
+    override entityType: string = EntityType.@(Model.Name?.AsPascaleCase());
+
+    @foreach (var navProperty in Model.NavigationProperties.Where(e => !e.IsCollection && e.ForeignKey.AsCamelCase() != "id"))
+    {
+<text>    @@Input() @(navProperty.ForeignKey.AsCamelCase())?: Guid;
+</text>
+    }
+
+    @foreach (var navProperty in Model.NavigationProperties.Where(e => !e.IsCollection && e.ForeignKey.AsCamelCase() != "id"))
+    {
+<text>    get show@(navProperty.Name.AsPascaleCase())(): boolean { return this.@(navProperty.ForeignKey.AsCamelCase()) == null; }
+</text>
+    }
+
+    override store: ODataStore;
+    logStore: ODataStore;
+
+    constructor(
+        protected slidePanelService: SlidePanelService,
+        protected dataEventService: DataEventService,
+        override authorizationService: AuthorizationService,
+        protected context: Context
+    ) {
+        super();
+        this.store = context.@(Model.Name?.AsCamelCase().AsPlural());
+        this.logStore = context.@(Model.Name?.AsCamelCase().AsPlural()).getLogsStore(this.id);
+    }
+
+    override async ngOnInit(): Promise<void> {
+        await super.ngOnInit();
+        this.logStore = this.context.@(Model.Name?.AsCamelCase().AsPlural()).getLogsStore(this.id);
+
+        this.dataEventService.@(Model.Name?.AsCamelCase().AsPlural())Changed$
+            .pipe(takeUntil(this._destroying$))
+            .subscribe(async () => { await this.refresh(); });
+    }
+
+    override async ngOnChanges(changes: SimpleChanges): Promise<void> {
+        await super.ngOnChanges(changes);
+        if (changes['id']) {
+            this.logStore = this.context.@(Model.Name?.AsCamelCase().AsPlural()).getLogsStore(this.id);
+        }
+    }
+
+    onDeleted() {
+        this.slidePanelService.popComponent(@(Model.Name?.AsPascaleCase())SlideComponent);
+    }
+
+    override buildSelect(): any[] {
+        let select = super.buildSelect();
+        select.push("name");
+        return select;
+    }
+
+    override prepareFilters(filter: Array<any>) { }
+}

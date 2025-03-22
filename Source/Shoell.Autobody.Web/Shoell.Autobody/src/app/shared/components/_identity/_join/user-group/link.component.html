@@ -1,0 +1,94 @@
+<div class="link-body">
+    <dx-data-grid #usersDataGrid *ngIf="showUsers" height="100%" [allowColumnReordering]="true"
+        [allowColumnResizing]="true" [columnAutoWidth]="true" [columnHidingEnabled]="false"
+        [dataSource]="usersDataSource" [focusedRowEnabled]="false" [remoteOperations]="true"
+        [rowAlternationEnabled]="true" [showBorders]="true" [showColumnLines]="false" [showRowLines]="false"
+        [wordWrapEnabled]="true" [(selectedRowKeys)]="selectedUsers">
+        <dxo-column-chooser [enabled]="true" mode="select"></dxo-column-chooser>
+        <dxo-editing mode="batch" refreshMode="full" [allowAdding]="false" [allowUpdating]="false"
+            [allowDeleting]="false">
+        </dxo-editing>
+        <dxo-filter-panel [visible]="false"></dxo-filter-panel>
+        <dxo-filter-row [visible]="false"></dxo-filter-row>
+        <dxo-group-panel [visible]="false"></dxo-group-panel>
+        <dxo-grouping #expand [autoExpandAll]="true" [contextMenuEnabled]="false"></dxo-grouping>
+        <dxo-header-filter [visible]="false"></dxo-header-filter>
+        <dxo-keyboard-navigation enterKeyAction="startEdit" enterKeyDirection="row" [editOnKeyPress]="true">
+        </dxo-keyboard-navigation>
+        <dxo-load-panel [showPane]="true"></dxo-load-panel>
+        <dxo-paging [enabled]="true" [pageSize]="100"></dxo-paging>
+        <dxo-scrolling mode="virtual" rowRenderingMode="virtual" [preloadEnabled]="true"></dxo-scrolling>
+        <dxo-sorting mode="multiple"></dxo-sorting>
+        <dxo-search-panel [visible]="true" [searchVisibleColumnsOnly]="false"></dxo-search-panel>
+        <dxo-selection [allowSelectAll]="true" selectAllMode="allPages" mode="multiple"
+            showCheckBoxesMode="always"></dxo-selection>
+        <dxo-toolbar>
+            <dxi-item location="before">
+                <dx-button stylingMode="contained" type="success" [icon]="fasLink"
+                    text="Link Users ({{selectedUsers.length}})" (onClick)="addGroupToUsers()">
+                </dx-button>
+            </dxi-item>
+            <dxi-item location="before">
+                <dx-button stylingMode="contained" type="default" [icon]="fasPlus"
+                    text="Add User" (onClick)="createUser()">
+                </dx-button>
+            </dxi-item>
+            <dxi-item location="before" name="groupPanel" locateInMenu="auto"></dxi-item>
+            <dxi-item location="after" locateInMenu="auto" showText="inMenu" widget="dxButton"
+                [options]="{ text: 'Refresh', icon: 'refresh', onClick: refreshUsers }"></dxi-item>
+            <dxi-item name="addRowButton"></dxi-item>
+            <dxi-item name="saveButton"></dxi-item>
+            <dxi-item name="revertButton"></dxi-item>
+            <dxi-item name="columnChooserButton" locateInMenu="auto"></dxi-item>
+            <dxi-item name="searchPanel" locateInMenu="auto"></dxi-item>
+        </dxo-toolbar>
+        <dxi-column dataField="name" caption="Name" [sortIndex]="0"></dxi-column>
+        <dxi-column dataField="description" caption="Description" [sortIndex]="0"></dxi-column>
+    </dx-data-grid>
+    <dx-data-grid #groupsDataGrid *ngIf="showGroups" height="100%" [allowColumnReordering]="true"
+        [allowColumnResizing]="true" [columnAutoWidth]="true" [columnHidingEnabled]="false"
+        [dataSource]="groupsDataSource" [focusedRowEnabled]="false" [remoteOperations]="true"
+        [rowAlternationEnabled]="true" [showBorders]="true" [showColumnLines]="false" [showRowLines]="false"
+        [wordWrapEnabled]="true" [(selectedRowKeys)]="selectedGroups">
+        <dxo-column-chooser [enabled]="true" mode="select"></dxo-column-chooser>
+        <dxo-editing mode="batch" refreshMode="full" [allowAdding]="false" [allowUpdating]="false"
+            [allowDeleting]="false">
+        </dxo-editing>
+        <dxo-filter-panel [visible]="false"></dxo-filter-panel>
+        <dxo-filter-row [visible]="false"></dxo-filter-row>
+        <dxo-group-panel [visible]="false"></dxo-group-panel>
+        <dxo-grouping #expand [autoExpandAll]="true" [contextMenuEnabled]="false"></dxo-grouping>
+        <dxo-header-filter [visible]="false"></dxo-header-filter>
+        <dxo-keyboard-navigation enterKeyAction="startEdit" enterKeyDirection="row" [editOnKeyPress]="true">
+        </dxo-keyboard-navigation>
+        <dxo-load-panel [showPane]="true"></dxo-load-panel>
+        <dxo-paging [enabled]="true" [pageSize]="100"></dxo-paging>
+        <dxo-scrolling mode="virtual" rowRenderingMode="virtual" [preloadEnabled]="true"></dxo-scrolling>
+        <dxo-sorting mode="multiple"></dxo-sorting>
+        <dxo-search-panel [visible]="true" [searchVisibleColumnsOnly]="false"></dxo-search-panel>
+        <dxo-selection [allowSelectAll]="true" selectAllMode="allPages" mode="multiple"
+            showCheckBoxesMode="always"></dxo-selection>
+        <dxo-toolbar>
+            <dxi-item location="before">
+                <dx-button stylingMode="contained" type="success" [icon]="fasLink"
+                    text="Link Groups ({{selectedGroups.length}})" (onClick)="addUserToGroups()">
+                </dx-button>
+            </dxi-item>
+            <dxi-item location="before">
+                <dx-button stylingMode="contained" type="default" [icon]="fasPlus"
+                    text="Add Group" (onClick)="createGroup()">
+                </dx-button>
+            </dxi-item>
+            <dxi-item location="before" name="groupPanel" locateInMenu="auto"></dxi-item>
+            <dxi-item location="after" locateInMenu="auto" showText="inMenu" widget="dxButton"
+                [options]="{ text: 'Refresh', icon: 'refresh', onClick: refreshGroups }"></dxi-item>
+            <dxi-item name="addRowButton"></dxi-item>
+            <dxi-item name="saveButton"></dxi-item>
+            <dxi-item name="revertButton"></dxi-item>
+            <dxi-item name="columnChooserButton" locateInMenu="auto"></dxi-item>
+            <dxi-item name="searchPanel" locateInMenu="auto"></dxi-item>
+        </dxo-toolbar>
+        <dxi-column dataField="name" caption="Name" [sortIndex]="0"></dxi-column>
+        <dxi-column dataField="description" caption="Description" [sortIndex]="0"></dxi-column>
+    </dx-data-grid>
+</div>

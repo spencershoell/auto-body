@@ -1,0 +1,86 @@
+﻿@model EntityType;
+@{
+	Layout = null;
+	var companyName = Model.Config.CompanyName.AsPascaleCase();
+	var projectName = Model.Config.ProjectName.AsPascaleCase();
+	var ns = (Model.Namespace == string.Empty) ? string.Empty : $".{Model.Namespace}";
+	var name = Model.Name.AsPascaleCase();
+}
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using @(companyName).@(projectName).Data.Tests;
+using @(companyName).@(projectName).Identity@(ns);
+using @(companyName).@(projectName).Interfaces;
+using @(companyName).@(projectName).Models.Identity;
+using @(companyName).@(projectName).Models@(ns);
+
+namespace @(companyName).@(projectName).Data@(ns).Tests
+{
+    public class @(name)RepositoryTests(
+        @foreach(var navPropertyType in Model.NavigationProperties.Where(e => !e.IsCollection && !e.Nullable).Select(e => e.Type).Distinct())
+        {
+<text>        @(navPropertyType.AsPascaleCase())RepositoryTests @(navPropertyType.AsPascaleCase())RepoTests,
+</text>
+        }
+        @(name)Repository repository, 
+        IHttpContextAccessor httpContextAccessor,
+        @(projectName)Context context, 
+        IDateTimeProvider dateTimeProvider
+    ) : BaseRepositoryTests<@(name)>
+    {
+        protected override @(name)Repository Repository => repository;
+
+        protected override IHttpContextAccessor HttpContextAccessor => httpContextAccessor;
+
+        protected override @(projectName)Context Context => context;
+
+        protected override string ReadPolicy => @(name)Roles.Read;
+        protected override string CreatePolicy => @(name)Roles.Create;
+        protected override string UpdatePolicy => @(name)Roles.Update;
+        protected override string DeletePolicy => @(name)Roles.Delete;
+
+        protected override string RecyclePolicy => @(name)Roles.Recycle;
+        protected override string RecoverPolicy => @(name)Roles.Recover;
+        protected override string PurgePolicy => @(name)Roles.Purge;
+
+        protected override string ArchivePolicy => @(name)Roles.Archive;
+        protected override string RestorePolicy => @(name)Roles.Restore;
+
+        protected override IDateTimeProvider DateTimeProvider => dateTimeProvider;
+ @if(Model.NavigationProperties.Where(e => !e.IsCollection).Count() > 0)
+ {
+ <text>
+        public override async Task<@(name)> GetDefaultModelValues_AddAsync(Guid userId)
+        {
+            var u = await Context.Users.FirstOrDefaultAsync(e => e.Id == userId)
+                ?? Context.Users.Local.FirstOrDefault(e => e.Id == userId);
+
+            if (u == null)
+            {
+                u = new User { UserName = Guid.NewGuid().ToString() };
+                await Context.Users.AddAsync(u);
+            }
+    @foreach(var navProperty in Model.NavigationProperties.Where(e => !e.IsCollection && !e.Nullable))
+    {
+<text>
+            var @(navProperty.Name.AsCamelCase()) = await @(navProperty.Type.AsPascaleCase())RepoTests.GetDefaultModelValues_AddAsync(u.Id);
+            await Context.@(navProperty.Type.AsPascaleCase().AsPlural()).AddAsync(@(navProperty.Name.AsCamelCase()));
+</text>
+    }
+
+            var model = await base.GetDefaultModelValues_AddAsync(userId);
+    @foreach(var navProperty in Model.NavigationProperties.Where(e => !e.IsOneToOne && !e.IsCollection && !e.Nullable))
+    {
+<text>            model.@(navProperty.Name.AsPascaleCase())Id = @(navProperty.Name.AsCamelCase()).Id;
+</text>
+    }@foreach(var navProperty in Model.NavigationProperties.Where(e => e.IsOneToOne && !e.IsCollection && !e.Nullable))
+    {
+<text>            model.@(navProperty.ForeignKey.AsPascaleCase()) = @(navProperty.Name.AsCamelCase()).Id;
+</text>
+    }
+            return model;
+        }
+</text>
+ }
+    }
+}
